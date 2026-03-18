@@ -1,6 +1,6 @@
 # Members
 
-Timothy Cocks 33117357 tc0c0001@student.monash.edu
+Timothy Cocks 33117357 tcoc0001@student.monash.edu Timothycocks
 
 Hugo Knights-Burke 34990224 hkni0005@student.monash.edu
 
