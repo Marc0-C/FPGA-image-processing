@@ -6,4 +6,4 @@ Hugo Knights-Burke 34990224 hkni0005@student.monash.edu
 
 Marco Carrera 36841633 mcar0097@student.monash.edu
  
-flynn kennedy 34977856 fken0004@student.monash.eddu
+Flynn Kennedy 34977856 fken0004@student.monash.edu
