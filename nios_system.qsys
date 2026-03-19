@@ -164,6 +164,22 @@
          type = "int";
       }
    }
+   element jtag_uart_0
+   {
+      datum _sortIndex
+      {
+         value = "11";
+         type = "int";
+      }
+   }
+   element jtag_uart_0.avalon_jtag_slave
+   {
+      datum baseAddress
+      {
+         value = "67375216";
+         type = "String";
+      }
+   }
    element new_sdram_controller_0
    {
       datum _sortIndex
@@ -395,6 +411,25 @@
   <parameter name="resetSynchronousEdges" value="NONE" />
  </module>
  <module
+   name="jtag_uart_0"
+   kind="altera_avalon_jtag_uart"
+   version="18.1"
+   enabled="1">
+  <parameter name="allowMultipleConnections" value="false" />
+  <parameter name="avalonSpec" value="2.0" />
+  <parameter name="clkFreq" value="50000000" />
+  <parameter name="hubInstanceID" value="0" />
+  <parameter name="readBufferDepth" value="64" />
+  <parameter name="readIRQThreshold" value="8" />
+  <parameter name="simInputCharacterStream" value="" />
+  <parameter name="simInteractiveOptions">NO_INTERACTIVE_WINDOWS</parameter>
+  <parameter name="useRegistersForReadBuffer" value="false" />
+  <parameter name="useRegistersForWriteBuffer" value="false" />
+  <parameter name="useRelativePathForSimFile" value="false" />
+  <parameter name="writeBufferDepth" value="64" />
+  <parameter name="writeIRQThreshold" value="8" />
+ </module>
+ <module
    name="new_sdram_controller_0"
    kind="altera_avalon_new_sdram_controller"
    version="18.1"
@@ -447,7 +482,7 @@
   <parameter name="dataAddrWidth" value="27" />
   <parameter name="dataMasterHighPerformanceAddrWidth" value="1" />
   <parameter name="dataMasterHighPerformanceMapParam" value="" />
-  <parameter name="dataSlaveMapParam"><![CDATA[<address-map><slave name='new_sdram_controller_0.s1' start='0x0' end='0x4000000' type='altera_avalon_new_sdram_controller.s1' /><slave name='onchip_memory2_0.s1' start='0x4020000' end='0x4039000' type='altera_avalon_onchip_memory2.s1' /><slave name='nios2_gen2_0.debug_mem_slave' start='0x4040800' end='0x4041000' type='altera_nios2_gen2.debug_mem_slave' /><slave name='LEDR.s1' start='0x4041000' end='0x4041010' type='altera_avalon_pio.s1' /><slave name='SW.s1' start='0x4041010' end='0x4041020' type='altera_avalon_pio.s1' /><slave name='KEY.s1' start='0x4041020' end='0x4041030' type='altera_avalon_pio.s1' /><slave name='HEX1.s1' start='0x4041030' end='0x4041040' type='altera_avalon_pio.s1' /><slave name='HEX2.s1' start='0x4041040' end='0x4041050' type='altera_avalon_pio.s1' /><slave name='Pix_Data.s1' start='0x4041050' end='0x4041060' type='altera_avalon_pio.s1' /><slave name='Cam_Ready.s1' start='0x4041060' end='0x4041070' type='altera_avalon_pio.s1' /></address-map>]]></parameter>
+  <parameter name="dataSlaveMapParam"><![CDATA[<address-map><slave name='new_sdram_controller_0.s1' start='0x0' end='0x4000000' type='altera_avalon_new_sdram_controller.s1' /><slave name='onchip_memory2_0.s1' start='0x4020000' end='0x4039000' type='altera_avalon_onchip_memory2.s1' /><slave name='nios2_gen2_0.debug_mem_slave' start='0x4040800' end='0x4041000' type='altera_nios2_gen2.debug_mem_slave' /><slave name='LEDR.s1' start='0x4041000' end='0x4041010' type='altera_avalon_pio.s1' /><slave name='SW.s1' start='0x4041010' end='0x4041020' type='altera_avalon_pio.s1' /><slave name='KEY.s1' start='0x4041020' end='0x4041030' type='altera_avalon_pio.s1' /><slave name='HEX1.s1' start='0x4041030' end='0x4041040' type='altera_avalon_pio.s1' /><slave name='HEX2.s1' start='0x4041040' end='0x4041050' type='altera_avalon_pio.s1' /><slave name='Pix_Data.s1' start='0x4041050' end='0x4041060' type='altera_avalon_pio.s1' /><slave name='Cam_Ready.s1' start='0x4041060' end='0x4041070' type='altera_avalon_pio.s1' /><slave name='jtag_uart_0.avalon_jtag_slave' start='0x4041070' end='0x4041078' type='altera_avalon_jtag_uart.avalon_jtag_slave' /></address-map>]]></parameter>
   <parameter name="data_master_high_performance_paddr_base" value="0" />
   <parameter name="data_master_high_performance_paddr_size" value="0" />
   <parameter name="data_master_paddr_base" value="0" />
@@ -493,7 +528,7 @@
   <parameter name="instruction_master_high_performance_paddr_size" value="0" />
   <parameter name="instruction_master_paddr_base" value="0" />
   <parameter name="instruction_master_paddr_size" value="0" />
-  <parameter name="internalIrqMaskSystemInfo" value="0" />
+  <parameter name="internalIrqMaskSystemInfo" value="1" />
   <parameter name="io_regionbase" value="0" />
   <parameter name="io_regionsize" value="0" />
   <parameter name="master_addr_map" value="false" />
@@ -641,6 +676,15 @@
    kind="avalon"
    version="18.1"
    start="nios2_gen2_0.data_master"
+   end="jtag_uart_0.avalon_jtag_slave">
+  <parameter name="arbitrationPriority" value="1" />
+  <parameter name="baseAddress" value="0x04041070" />
+  <parameter name="defaultConnection" value="false" />
+ </connection>
+ <connection
+   kind="avalon"
+   version="18.1"
+   start="nios2_gen2_0.data_master"
    end="nios2_gen2_0.debug_mem_slave">
   <parameter name="arbitrationPriority" value="1" />
   <parameter name="baseAddress" value="0x04040800" />
@@ -758,11 +802,19 @@
    version="18.1"
    start="clk_0.clk"
    end="new_sdram_controller_0.clk" />
+ <connection kind="clock" version="18.1" start="clk_0.clk" end="jtag_uart_0.clk" />
  <connection
    kind="clock"
    version="18.1"
    start="clk_0.clk"
    end="onchip_memory2_0.clk1" />
+ <connection
+   kind="interrupt"
+   version="18.1"
+   start="nios2_gen2_0.irq"
+   end="jtag_uart_0.irq">
+  <parameter name="irqNumber" value="0" />
+ </connection>
  <connection
    kind="reset"
    version="18.1"
@@ -788,6 +840,11 @@
    version="18.1"
    start="clk_0.clk_reset"
    end="new_sdram_controller_0.reset" />
+ <connection
+   kind="reset"
+   version="18.1"
+   start="clk_0.clk_reset"
+   end="jtag_uart_0.reset" />
  <connection
    kind="reset"
    version="18.1"
@@ -838,6 +895,11 @@
    version="18.1"
    start="nios2_gen2_0.debug_reset_request"
    end="new_sdram_controller_0.reset" />
+ <connection
+   kind="reset"
+   version="18.1"
+   start="nios2_gen2_0.debug_reset_request"
+   end="jtag_uart_0.reset" />
  <connection
    kind="reset"
    version="18.1"
