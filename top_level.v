@@ -16,8 +16,13 @@ module top_level (
 	output			DRAM_WE_N,
 	
 	// ---- VGA IO ---- //
-	output			VGA_CLK
-
+	output			VGA_CLK,
+	output [3:0]   VGA_R,
+   output [3:0]   VGA_G,
+   output [3:0]   VGA_B,
+   output         VGA_HS,
+   output         VGA_VS
+	
 );
 
    sdram_pll pll0 (
@@ -29,6 +34,7 @@ module top_level (
 		.inclk0(CLOCK_50),
 		.c0(VGA_CLK)
 	);
+
 
     nios_system u0 (
 		.clk_clk       		(CLOCK_50),
@@ -42,4 +48,17 @@ module top_level (
 		.sdram_ras_n   		(DRAM_RAS_N),
 		.sdram_we_n    		(DRAM_WE_N)     		
     );
+	 
+	 vga_controller controller (
+		.VGA_CLK					(VGA_CLK),
+		.VGA_DATA				(),
+		.VGA_ADDR				(),
+		.VGA_R					(VGA_R),
+		.VGA_G					(VGA_G),
+		.VGA_B					(VGA_B),
+		.VGA_HS					(VGA_HS),
+		.VGA_VS					(VGA_VS),
+	 );
+	 
+	 
 endmodule
