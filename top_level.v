@@ -1,7 +1,7 @@
 module top_level (
 	// ---- Generic IO ---- //
 	input 			CLOCK_50,
-	
+	inout 	[35:0] GPIO,
 	// ---- SDRAM IO ---- //
 	output	[12:0]	DRAM_ADDR,
 	output	[1:0]		DRAM_BA,
@@ -21,7 +21,15 @@ module top_level (
    output [3:0]   VGA_G,
    output [3:0]   VGA_B,
    output         VGA_HS,
-   output         VGA_VS
+   output         VGA_VS,
+	
+	// ---- SPI IO ---- //
+	output         GSENSOR_CS_N,	 // chip select
+   output         GSENSOR_SCLK,
+   output         GSENSOR_SDI,    // Master Out (MOSI)
+   input          GSENSOR_SDO,    // Master In (MISO)
+   input  [2:1]   GSENSOR_INT     // Interrupt pins 
+	
 	
 );
 	wire [3:0] pixel_data;
@@ -39,7 +47,7 @@ module top_level (
 		.c0(VGA_CLK)
 	);
 
-	/*
+		
     nios_system u0 (
 		.clk_clk       		(CLOCK_50),
 		.sdram_addr    		(DRAM_ADDR),
@@ -50,9 +58,16 @@ module top_level (
 		.sdram_dq      		(DRAM_DQ),
 		.sdram_dqm     		({DRAM_UDQM, DRAM_LDQM}),
 		.sdram_ras_n   		(DRAM_RAS_N),
-		.sdram_we_n    		(DRAM_WE_N)     		
+		.sdram_we_n    		(DRAM_WE_N),
+			/////
+		// --- SPI Connections ---
+      .spi_0_external_MISO    (GSENSOR_SDO),  // Master In Slave Out 
+      .spi_0_external_MOSI    (GSENSOR_SDI),  // Master Out Slave In 
+      .spi_0_external_SCLK    (GSENSOR_SCLK), // 5MHz Clock 
+      // Bit 0 for Accelerometer, Bit 1 for Camera 
+      .spi_0_external_SS_n    ({GPIO[10], GSENSOR_CS_N})
     );
-	 */
+	 
 	 vga_controller controller (
 		.VGA_CLK					(VGA_CLK),
 		.VGA_DATA				(pixel_data),
@@ -64,7 +79,7 @@ module top_level (
 		.VGA_VS					(VGA_VS)
 	 );
 	 
-	 pixel_buffa (
+	 pixel_buffa buffa(
 		.clock					(VGA_CLK),
 		.data						(pixels_raw),
 		.rdaddress				(adwesssy),
