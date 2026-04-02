@@ -106,7 +106,7 @@ module top_level (
 
 		pixels_raw <= pixels_raw + 1;
 	end
-	*/
+
 	 
 	 
 	 
