@@ -64,7 +64,7 @@ module top_level (
 		.VGA_VS					(VGA_VS)
 	 );
 	 
-	 pixel_buffa (
+	 pixel_buffa buffa (
 		.clock					(VGA_CLK),
 		.data						(pixels_raw),
 		.rdaddress				(adwesssy),
