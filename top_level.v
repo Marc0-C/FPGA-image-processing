@@ -54,7 +54,7 @@ module top_level (
     nios_system u0 (
         .cam_ready_export_export (GPIO[2]), // cam_ready_export.export
         .clk_clk                 (CLOCK_50),                 //              clk.clk
-        .hex1_export_export      ({HEX2,HEX1,HEX1}),      //      hex1_export.export
+        .hex1_export_export      ({HEX2,HEX1,HEX0}),      //      hex1_export.export
         .hex2_export_export      ({HEX5,HEX4,HEX3}),      //      hex2_export.export
         .key_export_export       (KEY[1]),       //       key_export.export
         .ledr_export_export      (LEDR),      //      ledr_export.export
