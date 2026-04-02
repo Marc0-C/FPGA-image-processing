@@ -39,7 +39,6 @@ module top_level (
 		.c0(VGA_CLK)
 	);
 
-	/*
     nios_system u0 (
 		.clk_clk       		(CLOCK_50),
 		.sdram_addr    		(DRAM_ADDR),
@@ -52,7 +51,7 @@ module top_level (
 		.sdram_ras_n   		(DRAM_RAS_N),
 		.sdram_we_n    		(DRAM_WE_N)     		
     );
-	 */
+	 
 	 vga_controller controller (
 		.VGA_CLK					(VGA_CLK),
 		.VGA_DATA				(pixel_data),
