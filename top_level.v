@@ -36,9 +36,9 @@ module top_level (
 );
 	wire [3:0] pixel_data;
 	wire [3:0] pixel_buff_out;
-	wire [16:0] adwesssy;
-	reg [16:0] writeadrr;
-	//reg [3:0] pixels_raw; // test input for pixelbuffer "DATA"
+	wire [16:0] vga_adress;
+	reg [16:0] buffer_wadrr;
+	reg [3:0] pixels_raw; // test input for pixelbuffer "DATA"
 
    sdram_pll pll0 (
 		.inclk0(CLOCK_50),
@@ -75,7 +75,7 @@ module top_level (
 	 vga_controller controller (
 		.VGA_CLK					(VGA_CLK),
 		.VGA_DATA				(pixel_buff_out),
-		.VGA_ADDR				(adwesssy),
+		.VGA_ADDR				(vga_adress),
 		.VGA_R					(VGA_R),
 		.VGA_G					(VGA_G),
 		.VGA_B					(VGA_B),
@@ -86,17 +86,25 @@ module top_level (
 	 pixel_buffa (
 		.clock					(VGA_CLK),
 		.data						(pixel_data),
-		.rdaddress				(adwesssy),
-		.wraddress				(writeadrr),
+		.rdaddress				(vga_adress),
+		.wraddress				(buffer_wadrr),
 		.wren						(1'b1),
 		.q							(pixel_buff_out)
 	 );
-	 
-	/*
+	
+	
+	// compensate for if have issues with firsy column of pixels being offset then can make buffer writing one pixel ahead of vga controller:
+	//wire [16:0] rdaddr_latencycomp = (vga_adress == 17'd76799) ? 17'd0 : vga_adress + 17'd1; // probably a better way to do this though
+	// also needs ".rdaddress				(vga_adress)," replace vga_address with rdaddr_latencycomp
+
+
 	always @(posedge VGA_CLK) begin
-		writeadrr <= writeadrr + 1;
-		
-		pixels_raw <= 4'd15 - ((writeadrr / 17'd240) / 4'd15);
+		if (buffer_wadrr == 17'd76799)
+			buffer_wadrr <= 17'd0;
+		else
+			buffer_wadrr <= buffer_wadrr + 1;
+
+		pixels_raw <= pixels_raw + 1;
 	end
 	*/
 	 
