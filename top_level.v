@@ -58,7 +58,8 @@ module top_level (
         .hex2_export_export      ({HEX5,HEX4,HEX3}),      //      hex2_export.export
         .key_export_export       (KEY[1]),       //       key_export.export
         .ledr_export_export      (LEDR),      //      ledr_export.export
-        .pix_data_export_export  (pixel_data),  //  pix_data_export.export
+        .pix_buff_addr_export_export (buffer_wadrr),
+		  .pix_data_export_export  (pixel_data),  //  pix_data_export.export
         .reset_reset_n           (KEY[0]),           //            reset.reset_n
         .sdram_addr       			(DRAM_ADDR),
 		  .sdram_ba        			(DRAM_BA),      			
@@ -97,7 +98,7 @@ module top_level (
 	//wire [16:0] rdaddr_latencycomp = (vga_adress == 17'd76799) ? 17'd0 : vga_adress + 17'd1; // probably a better way to do this though
 	// also needs ".rdaddress				(vga_adress)," replace vga_address with rdaddr_latencycomp
 
-
+/*
 	always @(posedge VGA_CLK) begin
 		if (buffer_wadrr == 17'd76799)
 			buffer_wadrr <= 17'd0;
@@ -106,7 +107,7 @@ module top_level (
 
 		pixels_raw <= pixels_raw + 1;
 	end
-
+*/
 	 
 	 
 	 
