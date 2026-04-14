@@ -22,22 +22,19 @@ int main()
 {
 	#define IM_SIZE (240 * 320)
 
+	char col = 0;
 	char image_buffer[IM_SIZE];
-	for (int i = 0; i<240; i++) {
-		for (int j = 0; j < 320; j++){
-			if (j % 2 == 0 && i % 2 == 0){
-					image_buffer[j+320*i] = 0xf;
-			} else {
-				image_buffer[j+320*i] = 0x0;
-			}
-		}
+	while(1) {
+	for (int i = 0; i<IM_SIZE; i++) {
+			image_buffer[i] = col;
 	}
-
+	col =( col +1) %2;
 
   for (int i=0; i<IM_SIZE; i++){
 	  IOWR(PIX_BUFF_ADDR_BASE, 0, i);
 	  IOWR(PIX_DATA_BASE, 0, image_buffer[i]);
   }
+	}
 
   return 0;
 }
