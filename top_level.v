@@ -48,6 +48,11 @@ module top_level (
 	wire [16:0] vga_adress;
 	reg [16:0] buffer_wadrr;
 	reg [3:0] pixels_raw; // test input for pixelbuffer "DATA"
+	
+	assign GPIO[35:10] = 3'bzzz;
+	assign GPIO[6:6] = 3'bzzz;
+	assign GPIO[4:3] = 3'bzzz;
+	assign GPIO[1:0] = 3'bzzz;
 
    sdram_pll pll0 (
 		.inclk0(CLOCK_50),
@@ -84,9 +89,9 @@ module top_level (
         .cam_ready_export_export     (GPIO[2]),  
 
         // --- SPI Connections ---
-        .spi_0_external_MISO         (GSENSOR_SDO),
-        .spi_0_external_MOSI         (GSENSOR_SDI),
-        .spi_0_external_SCLK         (GSENSOR_SCLK),
+        .spi_0_external_MISO         (GPIO[7]),
+        .spi_0_external_MOSI         (GPIO[8]),
+        .spi_0_external_SCLK         (GPIO[9]),
         // Bit 0 for Accelerometer, Bit 1 for Camera
         .spi_0_external_SS_n         ({GPIO[5], GSENSOR_CS_N}) 
         //.spi_0_external_SS_n    ({GPIO[10], GSENSOR_CS_N}
