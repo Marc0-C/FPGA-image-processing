@@ -27,15 +27,23 @@ int main()
 	char cam_data;
 
 	char image_buffer[IM_SIZE];
+
+	for (int i=0; i<IM_SIZE; i++){
+			  IOWR(PIX_BUFF_ADDR_BASE, 0, i);
+			  IOWR(PIX_DATA_BASE, 0, 0);
+		  }
+
 	while(1) {
 
 			alt_avalon_spi_command(SPI_0_BASE, 1, 1, &cam_set, IM_SIZE, &image_buffer, 0);
 
 
-	  for (int i=0; i<IM_SIZE; i++){
-		  IOWR(PIX_BUFF_ADDR_BASE, 0, i);
-		  IOWR(PIX_DATA_BASE, 0, image_buffer[i]>>4);
+	  for (int i=0; i<240; i++){
+		  for (int j=0; j<320; j++){
+		  IOWR(PIX_BUFF_ADDR_BASE, 0, i*320+j);
+		  IOWR(PIX_DATA_BASE, 0, image_buffer[320*i+319-j-1]>>4);
 	  }
+	}
 	}
 
   return 0;
