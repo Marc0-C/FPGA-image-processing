@@ -49,10 +49,10 @@ module top_level (
 	reg [16:0] buffer_wadrr;
 	reg [3:0] pixels_raw; // test input for pixelbuffer "DATA"
 	
-	assign GPIO[35:10] = 3’bzzz
-	assign GPIO[6:6] = 3’bzzz
-	assign GPIO[4:3] = 3’bzzz
-	assign GPIO[1:0] = 3’bzzz
+	assign GPIO[35:10] = 3'bzzz;
+	assign GPIO[6:6] = 3'bzzz;
+	assign GPIO[4:3] = 3'bzzz;
+	assign GPIO[1:0] = 3'bzzz;
 
    sdram_pll pll0 (
 		.inclk0(CLOCK_50),
