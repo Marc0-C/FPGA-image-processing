@@ -28,12 +28,16 @@ int main()
 
 	char image_buffer[IM_SIZE];
 
+	uint32_t start_time, end_time, duration;
+	float fps;
+
 	for (int i=0; i<IM_SIZE; i++){
 			  IOWR(PIX_BUFF_ADDR_BASE, 0, i);
 			  IOWR(PIX_DATA_BASE, 0, 0);
 		  }
 
 	while(1) {
+			start_time = IORD_ALTERA_AVALON_PIO_DATA(USEC_COUNTER_PIO_BASE);
 
 			alt_avalon_spi_command(SPI_0_BASE, 1, 1, &cam_set, IM_SIZE, &image_buffer, 0);
 
@@ -43,6 +47,10 @@ int main()
 		  IOWR(PIX_BUFF_ADDR_BASE, 0, i*320+j);
 		  IOWR(PIX_DATA_BASE, 0, image_buffer[320*i+319-j-1]>>4);
 	  }
+	  end_time = IORD_ALTERA_AVALON_PIO_DATA(USEC_COUNTER_PIO_BASE);
+
+	  duration = end_time - start_time;
+	  printf("useconds : %d", duration);
 	}
 	}
 
