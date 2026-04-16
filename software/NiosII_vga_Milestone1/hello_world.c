@@ -19,6 +19,7 @@
 #include "io.h"
 #include <altera_avalon_spi.h>
 #include <altera_avalon_spi_regs.h>
+#include <altera_avalon_pio_regs.h>
 
 int main()
 {
@@ -28,22 +29,32 @@ int main()
 
 	char image_buffer[IM_SIZE];
 
+	int start_time, end_time, duration;
+	float fps;
+
 	for (int i=0; i<IM_SIZE; i++){
 			  IOWR(PIX_BUFF_ADDR_BASE, 0, i);
 			  IOWR(PIX_DATA_BASE, 0, 0);
 		  }
 
 	while(1) {
+			start_time = IORD_ALTERA_AVALON_PIO_DATA(USEC_COUNTER_PIO_BASE);
 
 			alt_avalon_spi_command(SPI_0_BASE, 1, 1, &cam_set, IM_SIZE, &image_buffer, 0);
 
 
 	  for (int i=0; i<240; i++){
 		  for (int j=0; j<320; j++){
-		  IOWR(PIX_BUFF_ADDR_BASE, 0, i*320+j);
-		  IOWR(PIX_DATA_BASE, 0, image_buffer[320*i+319-j-1]>>4);
+			  IOWR(PIX_BUFF_ADDR_BASE, 0, i*320+j);
+			  IOWR(PIX_DATA_BASE, 0, image_buffer[320*i+319-j-1]>>4);
+		  }
+
 	  }
-	}
+	  end_time = IORD_ALTERA_AVALON_PIO_DATA(USEC_COUNTER_PIO_BASE);
+
+	  duration = end_time - start_time;
+	  float fps = 1000000.0 / duration;
+	  printf("FPS: %.2f\n", fps);
 	}
 
   return 0;
