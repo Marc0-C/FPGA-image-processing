@@ -19,6 +19,7 @@
 #include "io.h"
 #include <altera_avalon_spi.h>
 #include <altera_avalon_spi_regs.h>
+#include "altera_avalon_pio_regs.h"
 
 int main()
 {
@@ -28,7 +29,7 @@ int main()
 
 	char image_buffer[IM_SIZE];
 
-	uint32_t start_time, end_time, duration;
+	int start_time, end_time, duration;
 	float fps;
 
 	for (int i=0; i<IM_SIZE; i++){
