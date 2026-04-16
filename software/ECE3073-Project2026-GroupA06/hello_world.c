@@ -17,16 +17,34 @@
 #include <stdio.h>
 #include "system.h"
 #include "io.h"
+#include <altera_avalon_spi.h>
+#include <altera_avalon_spi_regs.h>
 
 int main()
 {
-	int sw;
-  while (1) {
-	  sw = IORD(SW_BASE,0);
-	  IOWR(LEDR_BASE,0,sw);
-	  IOWR(HEX2_BASE,0,0b111111111111111111111111);
+	#define IM_SIZE (240 * 320)
+	char cam_set = 0;
+	char cam_data;
 
-  }
+	char image_buffer[IM_SIZE];
+
+	for (int i=0; i<IM_SIZE; i++){
+			  IOWR(PIX_BUFF_ADDR_BASE, 0, i);
+			  IOWR(PIX_DATA_BASE, 0, 0);
+		  }
+
+	while(1) {
+
+			alt_avalon_spi_command(SPI_0_BASE, 1, 1, &cam_set, IM_SIZE, &image_buffer, 0);
+
+
+	  for (int i=0; i<240; i++){
+		  for (int j=0; j<320; j++){
+		  IOWR(PIX_BUFF_ADDR_BASE, 0, i*320+j);
+		  IOWR(PIX_DATA_BASE, 0, image_buffer[320*i+319-j-1]>>4);
+	  }
+	}
+	}
 
   return 0;
 }

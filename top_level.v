@@ -1,8 +1,9 @@
 module top_level (
 	// ---- Generic IO ---- //
 	input 			CLOCK_50,
+	inout 	[35:0] GPIO,
 	input		[9:0] SW,
-	input		[2:2] GPIO,
+	//input		[2:2] GPIO,
 	input		[1:0] KEY,
 	output	[9:0] LEDR,
 	output	[7:0] HEX0,
@@ -31,7 +32,15 @@ module top_level (
    output [3:0]   VGA_G,
    output [3:0]   VGA_B,
    output         VGA_HS,
-   output         VGA_VS
+   output         VGA_VS,
+	
+	// ---- SPI IO ---- //
+	output         GSENSOR_CS_N,	 // chip select
+   output         GSENSOR_SCLK,
+   output         GSENSOR_SDI,    // Master Out (MOSI)
+   input          GSENSOR_SDO,    // Master In (MISO)
+   input  [2:1]   GSENSOR_INT     // Interrupt pins 
+	
 	
 );
 	wire [3:0] pixel_data;
@@ -39,6 +48,11 @@ module top_level (
 	wire [16:0] vga_adress;
 	reg [16:0] buffer_wadrr;
 	reg [3:0] pixels_raw; // test input for pixelbuffer "DATA"
+	
+	assign GPIO[35:10] = 3'bzzz;
+	assign GPIO[6:6] = 3'bzzz;
+	assign GPIO[4:3] = 3'bzzz;
+	assign GPIO[1:0] = 3'bzzz;
 
    sdram_pll pll0 (
 		.inclk0(CLOCK_50),
@@ -50,27 +64,41 @@ module top_level (
 		.c0(VGA_CLK)
 	);
 
-    nios_system u0 (
-        .cam_ready_export_export (GPIO[2]), // cam_ready_export.export
-        .clk_clk                 (CLOCK_50),                 //              clk.clk
-        .hex1_export_export      ({HEX2,HEX1,HEX0}),      //      hex1_export.export
-        .hex2_export_export      ({HEX5,HEX4,HEX3}),      //      hex2_export.export
-        .key_export_export       (KEY[1]),       //       key_export.export
-        .ledr_export_export      (LEDR),      //      ledr_export.export
-        .pix_data_export_export  (pixel_data),  //  pix_data_export.export
-        .reset_reset_n           (KEY[0]),           //            reset.reset_n
-        .sdram_addr       			(DRAM_ADDR),
-		  .sdram_ba        			(DRAM_BA),      			
-		  .sdram_cas_n      			(DRAM_CAS_N),
-		  .sdram_cke        			(DRAM_CKE),
-		  .sdram_cs_n       			(DRAM_CS_N),
-		  .sdram_dq         			(DRAM_DQ),
-		  .sdram_dqm        			({DRAM_UDQM, DRAM_LDQM}),
-		  .sdram_ras_n      			(DRAM_RAS_N),
-		  .sdram_we_n       			(DRAM_WE_N), 
-		  .sw_export_export        (SW)         //        sw_export.export
-    );
+///////////////////////
+  nios_system u0 (
+        // --- I/O ---
+        .clk_clk                     (CLOCK_50),
+        .reset_reset_n               (KEY[0]),
+        .sw_export_export            (SW),
+        .key_export_export           (KEY[1]),
+        .ledr_export_export          (LEDR),
+        .hex1_export_export          ({HEX2,HEX1,HEX0}),
+        .hex2_export_export          ({HEX5,HEX4,HEX3}),
+        
+        .sdram_addr                  (DRAM_ADDR),
+        .sdram_ba                    (DRAM_BA),
+        .sdram_cas_n                 (DRAM_CAS_N),
+        .sdram_cke                   (DRAM_CKE),
+        .sdram_cs_n                  (DRAM_CS_N),
+        .sdram_dq                    (DRAM_DQ),
+        .sdram_dqm                   ({DRAM_UDQM, DRAM_LDQM}),
+        .sdram_ras_n                 (DRAM_RAS_N),
+        .sdram_we_n                  (DRAM_WE_N),
+        .pix_buff_addr_export_export (buffer_wadrr),
+        .pix_data_export_export      (pixel_data),
+        .cam_ready_export_export     (GPIO[2]),  
 
+        // --- SPI Connections ---
+        .spi_0_external_MISO         (GPIO[7]),
+        .spi_0_external_MOSI         (GPIO[8]),
+        .spi_0_external_SCLK         (GPIO[9]),
+        // Bit 0 for Accelerometer, Bit 1 for Camera
+        .spi_0_external_SS_n         ({GPIO[5], GSENSOR_CS_N}) 
+        //.spi_0_external_SS_n    ({GPIO[10], GSENSOR_CS_N}
+    );
+///////////////////////
+  
+ 
 	 vga_controller controller (
 		.VGA_CLK					(VGA_CLK),
 		.VGA_DATA				(pixel_buff_out),
@@ -82,7 +110,7 @@ module top_level (
 		.VGA_VS					(VGA_VS)
 	 );
 	 
-	 pixel_buffa buffa (
+	 pixel_buffa buffa(
 		.clock					(VGA_CLK),
 		.data						(pixel_data),
 		.rdaddress				(vga_adress),
@@ -96,7 +124,7 @@ module top_level (
 	//wire [16:0] rdaddr_latencycomp = (vga_adress == 17'd76799) ? 17'd0 : vga_adress + 17'd1; // probably a better way to do this though
 	// also needs ".rdaddress				(vga_adress)," replace vga_address with rdaddr_latencycomp
 
-
+/*
 	always @(posedge VGA_CLK) begin
 		if (buffer_wadrr == 17'd76799)
 			buffer_wadrr <= 17'd0;
@@ -105,7 +133,7 @@ module top_level (
 
 		pixels_raw <= pixels_raw + 1;
 	end
-
+*/
 	 
 	 
 	 
