@@ -54,6 +54,9 @@ module top_level (
 	assign GPIO[6:6] = 3'bzzz;
 	assign GPIO[4:3] = 3'bzzz;
 	assign GPIO[1:0] = 3'bzzz;
+	
+	assign GSENSOR_SCLK = GPIO[9];
+	assign GSENSOR_SDI  = GPIO[8];
 
    sdram_pll pll0 (
 		.inclk0(CLOCK_50),
@@ -99,6 +102,8 @@ module top_level (
 		  
 		  // --- Counter ---
 		  .usec_counter_pio_export_export(current_usec),
+		  // --- Acceleromiter interrupt pin ---
+		  .pio_int_adxl345_export_export(GSENSOR_INT[1])
     );
 ///////////////////////
   
