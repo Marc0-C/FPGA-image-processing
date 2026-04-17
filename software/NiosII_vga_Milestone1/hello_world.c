@@ -99,9 +99,9 @@ int main()
 
 	// set them all 0 to init
 	for (int i=0; i<IM_SIZE; i++){
-			  IOWR(PIX_BUFF_ADDR_BASE, 0, i);
-			  IOWR(PIX_DATA_BASE, 0, 0);
-		  }
+	  IOWR(PIX_BUFF_ADDR_BASE, 0, i);
+	  IOWR(PIX_DATA_BASE, 0, 0);
+	}
 
 	// Set other 3 hex to blank since dont need them yet:
 	IOWR_32DIRECT(HEX2_BASE, 0, 0xFFFFFF);
