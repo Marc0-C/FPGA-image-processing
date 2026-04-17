@@ -54,6 +54,10 @@ module top_level (
 	assign GPIO[6:6] = 3'bzzz;
 	assign GPIO[4:3] = 3'bzzz;
 	assign GPIO[1:0] = 3'bzzz;
+	
+	assign GSENSOR_SCLK = GPIO[9];
+	assign GSENSOR_SDI  = GPIO[8];
+	assign GPIO[7] = GSENSOR_SDO;
 
    sdram_pll pll0 (
 		.inclk0(CLOCK_50),
@@ -95,6 +99,7 @@ module top_level (
         .spi_0_external_SCLK         (GPIO[9]),
         // Bit 0 for Accelerometer, Bit 1 for Camera
         .spi_0_external_SS_n         ({GPIO[5], GSENSOR_CS_N}), 
+		  .accel_irq_export_export        (GSENSOR_INT[2:1]),
         //.spi_0_external_SS_n    ({GPIO[10], GSENSOR_CS_N}
 		  
 		  // --- Counter ---
