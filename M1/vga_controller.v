@@ -45,10 +45,10 @@ module vga_controller (
 
 	always @(posedge VGA_CLK) // horizontal counter
 		begin
-			if (H_ADDR < H_CYCLE - 19'd1)
-				H_ADDR <= H_ADDR + 19'd1;
+			if (H_ADDR < H_CYCLE - 1)
+				H_ADDR <= H_ADDR + 1;
 			else
-				H_ADDR <= 19'd0;
+				H_ADDR <= 0;
 		end
 		
 	always @(posedge VGA_CLK) // vertical counter
@@ -73,11 +73,11 @@ module vga_controller (
 	
 	wire [18:0] H_MEM_ADDR, V_MEM_ADDR;	
 	
-	assign H_MEM_ADDR = H_ADDR - (H_SYNC + H_BACK) + 19'd1;
+	assign H_MEM_ADDR = H_ADDR - (H_SYNC + H_BACK) + 1;
 	assign V_MEM_ADDR = V_ADDR - (V_SYNC + V_BACK);
 	
 //	// Scale the addresses to 320X240 instead of 640x480. 
-	assign VGA_ADDR = ((H_MEM_ADDR >> 1) + ((V_MEM_ADDR >> 1) * 19'd320));
+	assign VGA_ADDR = ((H_MEM_ADDR >> 1) + ((V_MEM_ADDR >> 1) * 320));
 					
 	
 endmodule
