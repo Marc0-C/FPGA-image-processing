@@ -46,6 +46,7 @@ module top_level (
 	wire [3:0] pixel_data;
 	wire [3:0] pixel_buff_out;
 	wire [16:0] vga_adress;
+	wire [31:0] current_usec;
 	reg [16:0] buffer_wadrr;
 	reg [3:0] pixels_raw; // test input for pixelbuffer "DATA"
 	
@@ -93,8 +94,11 @@ module top_level (
         .spi_0_external_MOSI         (GPIO[8]),
         .spi_0_external_SCLK         (GPIO[9]),
         // Bit 0 for Accelerometer, Bit 1 for Camera
-        .spi_0_external_SS_n         ({GPIO[5], GSENSOR_CS_N}) 
+        .spi_0_external_SS_n         ({GPIO[5], GSENSOR_CS_N}), 
         //.spi_0_external_SS_n    ({GPIO[10], GSENSOR_CS_N}
+		  
+		  // --- Counter ---
+		  .usec_counter_pio_export_export(current_usec),
     );
 ///////////////////////
   
@@ -119,6 +123,12 @@ module top_level (
 		.q							(pixel_buff_out)
 	 );
 	
+	
+	usec_counter usec (
+		.clk(CLOCK_50),
+		.reset_n(KEY[0]),
+		.usec(current_usec) 
+	);
 	
 	// compensate for if have issues with firsy column of pixels being offset then can make buffer writing one pixel ahead of vga controller:
 	//wire [16:0] rdaddr_latencycomp = (vga_adress == 17'd76799) ? 17'd0 : vga_adress + 17'd1; // probably a better way to do this though
