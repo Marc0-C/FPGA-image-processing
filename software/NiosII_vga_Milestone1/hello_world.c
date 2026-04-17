@@ -1,8 +1,7 @@
-/*
- * NIOS II CAMERA
- * Add documentation here...
- *
- */
+// C code to be run on the processor, processing inputs and formatting outputs for VGA, Gyroscope, and HEX Display.
+// Created By : Group A06 - Timothy Cocks, Hugo Knights-Burke, Marco Carrera, Flynn Kennedy
+// Created Date: 17/04
+// version ='1.0'
 
 #include <stdio.h>
 #include <stdint.h>
@@ -25,33 +24,32 @@ int main()
 
 	// set them all 0 to init
 	for (int i=0; i<IM_SIZE; i++){
-			  IOWR(PIX_BUFF_ADDR_BASE, 0, i);
-			  IOWR(PIX_DATA_BASE, 0, 0);
-		  }
+		IOWR(PIX_BUFF_ADDR_BASE, 0, i);
+		IOWR(PIX_DATA_BASE, 0, 0);
+	}
 
 	// Set other 3 hex to blank since dont need them yet:
 	IOWR_32DIRECT(HEX2_BASE, 0, 0xFFFFFF);
 
 	while(1) {
-			start_time = IORD_ALTERA_AVALON_PIO_DATA(USEC_COUNTER_PIO_BASE); // gets start time from counter
+		start_time = IORD_ALTERA_AVALON_PIO_DATA(USEC_COUNTER_PIO_BASE); // gets start time from counter
 
-			// gets frame from espcam and puts it in image sdram
-			alt_avalon_spi_command(SPI_0_BASE, 1, 1, &cam_set, IM_SIZE, &image_buffer, 0);
+		// gets frame from espcam and puts it in image sdram
+		alt_avalon_spi_command(SPI_0_BASE, 1, 1, &cam_set, IM_SIZE, &image_buffer, 0);
 
-			// iterate through all of the frames and write the pixel data to pixel buffer
-			for (int i=0; i<240; i++){
-				for (int j=0; j<320; j++){
-					IOWR(PIX_BUFF_ADDR_BASE, 0, i*320+j);
-					IOWR(PIX_DATA_BASE, 0, image_buffer[320*i+319-j-1]>>4);
-				}
-
+		// iterate through all of the frames and write the pixel data to pixel buffer
+		for (int i=0; i<240; i++){
+			for (int j=0; j<320; j++){
+				IOWR(PIX_BUFF_ADDR_BASE, 0, i*320+j);
+				IOWR(PIX_DATA_BASE, 0, image_buffer[320*i+319-j-1]>>4);
 			}
-			end_time = IORD_ALTERA_AVALON_PIO_DATA(USEC_COUNTER_PIO_BASE); // gets end time from counter
 
-			duration = end_time - start_time; // gets the time since frame started to frame finished
+		}
+		end_time = IORD_ALTERA_AVALON_PIO_DATA(USEC_COUNTER_PIO_BASE); // gets end time from counter
 
-			display_fps(duration); // call function to calculate & display the fps on hex
+		duration = end_time - start_time; // gets the time since frame started to frame finished
 
+		display_fps(duration); // call function to calculate & display the fps on hex
 	}
 
   return 0;
