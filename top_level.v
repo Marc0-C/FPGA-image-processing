@@ -54,7 +54,25 @@ module top_level (
 	assign GPIO[6:6] = 3'bzzz;
 	assign GPIO[4:3] = 3'bzzz;
 	assign GPIO[1:0] = 3'bzzz;
+	
+	
+	wire master_miso;
+	wire master_mosi;
+	wire master_sclk;
+	wire master_ss_n;
 
+	
+	// only one bit so just assign outputs and multiplex inputs 
+	assign GPIO[8] = nios_mosi;
+	assign GSENSOR_SDI = nios_mosi;
+	assign GPIO[9] = nios_sclk;
+	assign GSENSOR_SCLK = nios_sclk;
+	
+	assign multiplexed_miso = (GSENSOR_CS_N) ? GPIO[7] : GSENSOR_SDO; //multiplex based on chipselect
+
+	
+	
+	
    sdram_pll pll0 (
 		.inclk0(CLOCK_50),
 		.c0(DRAM_CLK)
@@ -90,9 +108,9 @@ module top_level (
         .cam_ready_export_export     (GPIO[2]),  
 
         // --- SPI Connections ---
-        .spi_0_external_MISO         (GPIO[7]),
-        .spi_0_external_MOSI         (GPIO[8]),
-        .spi_0_external_SCLK         (GPIO[9]),
+        .spi_0_external_MISO         (multiplexed_miso),
+        .spi_0_external_MOSI         (nios_mosi),
+        .spi_0_external_SCLK         (nios_sclk),
         // Bit 0 for Accelerometer, Bit 1 for Camera
         .spi_0_external_SS_n         ({GPIO[5], GSENSOR_CS_N}), 
         //.spi_0_external_SS_n    ({GPIO[10], GSENSOR_CS_N}
