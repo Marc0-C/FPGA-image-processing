@@ -124,7 +124,7 @@ int main()
 		// gets frame from espcam and puts it in image sdram
 		alt_avalon_spi_command(SPI_0_BASE, 1, 1, &cam_set, IM_SIZE, &image_buffer, 0);
 
-		// iterate through all of the frames and write the pixel data to pixel buffer
+		// iterate through all of the pixels and write the pixel data to pixel buffer
 		for (int i=0; i<240; i++){
 			for (int j=0; j<320; j++){
 				IOWR(PIX_BUFF_ADDR_BASE, 0, i*320+j);
