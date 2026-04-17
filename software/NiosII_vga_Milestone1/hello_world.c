@@ -1,6 +1,7 @@
-/*
- *
- */
+// C code to be run on the processor, processing inputs and formatting outputs for VGA, Gyroscope, and HEX Display.
+// Created By : Group A06 - Timothy Cocks, Hugo Knights-Burke, Marco Carrera, Flynn Kennedy
+// Created Date: 17/04
+// version ='1.0'
 
 #include <stdio.h>
 #include <stdint.h>
@@ -97,9 +98,9 @@ int main()
 
 	// set them all 0 to init
 	for (int i=0; i<IM_SIZE; i++){
-			  IOWR(PIX_BUFF_ADDR_BASE, 0, i);
-			  IOWR(PIX_DATA_BASE, 0, 0);
-		  }
+		IOWR(PIX_BUFF_ADDR_BASE, 0, i);
+		IOWR(PIX_DATA_BASE, 0, 0);
+	}
 
 	// Set other 3 hex to blank since dont need them yet:
 	IOWR_32DIRECT(HEX2_BASE, 0, 0xFFFFFF);
