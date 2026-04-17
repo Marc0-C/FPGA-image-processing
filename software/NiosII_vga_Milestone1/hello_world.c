@@ -2,6 +2,7 @@
 // Created By : Group A06 - Timothy Cocks, Hugo Knights-Burke, Marco Carrera, Flynn Kennedy
 // Created Date: 17/04
 // version ='1.0'
+// Gyro code referenced from Week 4 SPI Workshop code
 
 #include <stdio.h>
 #include <stdint.h>
