@@ -108,6 +108,7 @@ int main()
 
     while (1)
     {
+    	start_time = IORD_ALTERA_AVALON_PIO_DATA(USEC_COUNTER_PIO_BASE); // gets start time from counter
 
 		alt_avalon_spi_command(SPI_0_BASE, 0, 1, &readX, 2, &xData, 0);
 
@@ -118,7 +119,7 @@ int main()
 		printf("X axis: %4d\t Y axis: %4d\t Z axis %4d\n", xData, yData, zData);
 
 
-        start_time = IORD_ALTERA_AVALON_PIO_DATA(USEC_COUNTER_PIO_BASE); // gets start time from counter
+
 
 		// gets frame from espcam and puts it in image sdram
 		alt_avalon_spi_command(SPI_0_BASE, 1, 1, &cam_set, IM_SIZE, &image_buffer, 0);
