@@ -108,6 +108,7 @@ int main()
 
     while (1)
     {
+    	start_time = IORD_ALTERA_AVALON_PIO_DATA(USEC_COUNTER_PIO_BASE); // gets start time from counter
 
 		alt_avalon_spi_command(SPI_0_BASE, 0, 1, &readX, 2, &xData, 0);
 
@@ -118,16 +119,16 @@ int main()
 		printf("X axis: %4d\t Y axis: %4d\t Z axis %4d\n", xData, yData, zData);
 
 
-        start_time = IORD_ALTERA_AVALON_PIO_DATA(USEC_COUNTER_PIO_BASE); // gets start time from counter
+
 
 		// gets frame from espcam and puts it in image sdram
 		alt_avalon_spi_command(SPI_0_BASE, 1, 1, &cam_set, IM_SIZE, &image_buffer, 0);
 
-		// iterate through all of the frames and write the pixel data to pixel buffer
+		// iterate through all of the pixels and write the pixel data to pixel buffer
 		for (int i=0; i<240; i++){
 			for (int j=0; j<320; j++){
 				IOWR(PIX_BUFF_ADDR_BASE, 0, i*320+j);
-				IOWR(PIX_DATA_BASE, 0, image_buffer[320*i+319-j-1]>>4);
+				IOWR(PIX_DATA_BASE, 0, image_buffer[320*i+319-j-2]>>4);
 			}
 
 		}
@@ -179,7 +180,7 @@ void display_fps(int duration) {
 
 	int digit2 = (int)fps; 						// ones
 	int digit1 = (int)(fps * 10.0) % 10;  		// tenths
-	int digit0 = (int)(int)(fps * 100.0) % 10; 	// hundredths
+	int digit0 = (int)(fps * 100.0) % 10; 	// hundredths
 
 	// write FPS to respective displays:
 	uint8_t display2 = hex_lookup[digit2];
