@@ -44,7 +44,7 @@ Flynn Kennedy 34977856 fken0004@student.monash.edu iHateGithubDesktop
 
 11. Press "Apply" and then "Run" to begin the program.
 
-#---
+---
 # Tasks and Functionalities
 
 DE-10 camera functioning over SPI and through FPGA based Nios-II processor, displayed on VGA Display with no artifacts. FPS benchmark displayed on onboard HEX and accelerometer data printed to console.
