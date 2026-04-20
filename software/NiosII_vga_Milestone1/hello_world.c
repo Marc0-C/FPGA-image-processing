@@ -128,7 +128,7 @@ int main()
 		for (int i=0; i<240; i++){
 			for (int j=0; j<320; j++){
 				IOWR(PIX_BUFF_ADDR_BASE, 0, i*320+j);
-				IOWR(PIX_DATA_BASE, 0, image_buffer[320*i+319-j-1]>>4);
+				IOWR(PIX_DATA_BASE, 0, image_buffer[320*i+319-j-2]>>4);
 			}
 
 		}
@@ -180,7 +180,7 @@ void display_fps(int duration) {
 
 	int digit2 = (int)fps; 						// ones
 	int digit1 = (int)(fps * 10.0) % 10;  		// tenths
-	int digit0 = (int)(int)(fps * 100.0) % 10; 	// hundredths
+	int digit0 = (int)(fps * 100.0) % 10; 	// hundredths
 
 	// write FPS to respective displays:
 	uint8_t display2 = hex_lookup[digit2];
