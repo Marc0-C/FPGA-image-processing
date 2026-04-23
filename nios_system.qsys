@@ -1040,6 +1040,11 @@
    version="18.1"
    start="clk_0.clk_reset"
    end="onchip_memory2_0.reset1" />
+ <connection
+   kind="reset"
+   version="18.1"
+   start="nios2_gen2_0.debug_reset_request"
+   end="new_sdram_controller_0.reset" />
  <interconnectRequirement for="$system" name="qsys_mm.clockCrossingAdapter" value="HANDSHAKE" />
  <interconnectRequirement for="$system" name="qsys_mm.enableEccProtection" value="FALSE" />
  <interconnectRequirement for="$system" name="qsys_mm.insertDefaultSlave" value="FALSE" />
