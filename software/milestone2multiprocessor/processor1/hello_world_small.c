@@ -1,0 +1,99 @@
+#include <stdio.h>
+#include <stdint.h>
+#include "system.h"
+#include "io.h"
+#include <altera_avalon_spi.h>
+#include <altera_avalon_mutex.h>
+
+// Shared Memory Definitions
+#define SHARED_MAILBOX_BASE 0x03FFF000
+#define IM_SIZE (240 * 320)
+
+// Gyro write Registers
+#define BW_RATE 0x2c
+#define POWER_CONTROL 0x2d
+#define DATA_FORMAT 0x31
+#define INT_ENABLE 0x2E
+#define INT_MAP 0x2F
+#define THRESH_ACT 0x24
+#define THRESH_INACT 0x25
+#define TIME_INACT 0x26
+#define ACT_INACT_CTL 0x27
+#define THRESH_FF 0x28
+#define TIME_FF 0x29
+#define TAP_AXES 0x2a
+#define TAP_THRES 0x1d
+#define LATENT 0x22
+#define DUR 0x21
+#define WINDOW 0x23
+
+// Gyro read Registers
+#define INT_SOURCE 0x30
+#define X_LB 0x32
+#define X_HB 0x33
+#define Y_LB 0x34
+#define Y_HB 0x35
+#define Z_LB 0x36
+#define Z_HB 0x37
+
+#define CONFIG_LENGHT 16 * 2 // number of config details to send to initlise gyro
+
+#define READ_X_AXIS 0xc0 | X_LB // enable read bit and multi byte
+#define READ_Y_AXIS 0xc0 | Y_LB // enable read bit and multi byte
+#define READ_Z_AXIS 0xc0 | Z_LB // enable read bit and multi byte
+
+// define desired setup settings with write location then value to write
+alt_u8 gyro_config[CONFIG_LENGHT] = {
+    DATA_FORMAT, 0x0b, // 4-wire SPI, full resolution, +/- 16g
+    THRESH_ACT, 0x04,
+    THRESH_INACT, 0x02,
+    TIME_INACT, 0x02,
+    ACT_INACT_CTL, 0xff,
+    THRESH_FF, 0x09,
+    TIME_FF, 0x46,
+    TAP_THRES, 0x1f,
+    TAP_AXES, 0x07,
+    LATENT, 0x85,
+    DUR, 0x40,
+    WINDOW, 0xc0,
+    BW_RATE, 0x0a,
+    INT_ENABLE, 0x00,
+    INT_MAP, 0x20,
+    POWER_CONTROL, 0x08};
+
+int main() {
+    printf("processor1\n");
+
+    // muutex
+    alt_mutex_dev* mutex = altera_avalon_mutex_open(MUTEX_0_NAME);
+
+    // gyro
+    alt_u8 gyro_data_out;
+    for (int i = 0; i < 6; i += 2) {
+        alt_avalon_spi_command(SPI_0_BASE, 0, 2, gyro_config + i, 0, &gyro_data_out, 0);
+    }
+
+    alt_u8 readX = READ_X_AXIS;
+    alt_16 xData;
+    char cam_set = 0;
+
+    // buffer to hold SPI data before moving to SDRAM
+    static uint8_t local_cam_buffer[IM_SIZE];
+
+    while (1) {
+        // 1. Read Gyro (Processor 1 owns SPI)
+        alt_avalon_spi_command(SPI_0_BASE, 0, 1, &readX, 2, &xData, 0);
+
+        // 2. Capture Frame from Camera into local buffer
+        alt_avalon_spi_command(SPI_0_BASE, 1, 1, &cam_set, IM_SIZE, local_cam_buffer, 0);
+
+        // 3. Critical Section: Copy to Shared Mailbox
+        //if (altera_avalon_mutex_is_mine(mutex) || altera_avalon_mutex_lock(mutex, 1) == 0) {
+        for (int i = 0; i < IM_SIZE; i++) {
+            IOWR_8DIRECT(SHARED_MAILBOX_BASE, i, local_cam_buffer[i]);
+        }
+        altera_avalon_mutex_unlock(mutex);
+
+    }
+    return 0;
+}
