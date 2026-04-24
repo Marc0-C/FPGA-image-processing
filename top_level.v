@@ -3,16 +3,9 @@ module top_level (
 	input 			CLOCK_50,
 	inout 	[35:0] GPIO,
 	input		[9:0] SW,
-	//input		[2:2] GPIO,
 	input		[1:0] KEY,
 	output	[9:0] LEDR,
-	output	[7:0] HEX0,
-	output	[7:0] HEX1,
-	output	[7:0] HEX2,
-	output	[7:0] HEX3,
-	output	[7:0] HEX4,
-	output	[7:0] HEX5,
-	
+	output  [7:0]   HEX0, HEX1, HEX2, HEX3, HEX4, HEX5,	
 	// ---- SDRAM IO ---- //
 	output	[12:0]	DRAM_ADDR,
 	output	[1:0]		DRAM_BA,
@@ -47,7 +40,10 @@ module top_level (
 	wire [3:0] pixel_buff_out;
 	wire [16:0] vga_adress;
 	wire [31:0] current_usec;
-	reg [16:0] buffer_wadrr;
+	//wire nios_mosi; //
+   //wire nios_sclk; //
+	//reg [16:0] buffer_wadrr;
+	wire [16:0] buffer_wadrr;
 	reg [3:0] pixels_raw; // test input for pixelbuffer "DATA"
 	
 	assign GPIO[35:10] = 3'bzzz;
@@ -55,11 +51,11 @@ module top_level (
 	assign GPIO[4:3] = 3'bzzz;
 	assign GPIO[1:0] = 3'bzzz;
 	
-	
-	wire master_miso;
+	wire multiplexed_miso;
+	//wire master_miso;   
 	wire master_mosi;
 	wire master_sclk;
-	wire master_ss_n;
+	//wire master_ss_n;   
 
 	
 	// only one bit so just assign outputs and multiplex inputs 
@@ -88,6 +84,7 @@ module top_level (
         // --- I/O ---
         .clk_clk                     (CLOCK_50),
         .reset_reset_n               (KEY[0]),
+		  
         .sw_export_export            (SW),
         .key_export_export           (KEY[1]),
         .ledr_export_export          (LEDR),
@@ -103,6 +100,8 @@ module top_level (
         .sdram_dqm                   ({DRAM_UDQM, DRAM_LDQM}),
         .sdram_ras_n                 (DRAM_RAS_N),
         .sdram_we_n                  (DRAM_WE_N),
+		  //.sdram_clk_clk               (DRAM_CLK),	
+		  
         .pix_buff_addr_export_export (buffer_wadrr),
         .pix_data_export_export      (pixel_data),
         .cam_ready_export_export     (GPIO[2]),  
