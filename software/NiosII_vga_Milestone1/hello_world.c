@@ -64,7 +64,12 @@ alt_u8 gyro_config[CONFIG_LENGHT] = {
     INT_MAP, 0x20,
     POWER_CONTROL, 0x08};
 
+
+#define IM_SIZE (240 * 320)
+
 void display_fps(int duration); // declare prototype above so no "implicit declaration" warnings, not needed but i dont like warnings
+
+void display_img(int width, int height, int startx, int starty, alt_u8 buffer[IM_SIZE]); // prototype to display images from buffer
 
 int main()
 {
@@ -90,10 +95,9 @@ int main()
     alt_u8 readZ = READ_Z_AXIS;
 
     // camera stuff
-	#define IM_SIZE (240 * 320)
-	char cam_set = 0;
+	alt_u8 cam_set = 18; // binary 000 10010 cam settings
 
-	char image_buffer[IM_SIZE];
+	alt_u8 image_buffer[IM_SIZE];
 
 	int start_time, end_time, duration;
 
@@ -121,9 +125,55 @@ int main()
 
 
 
-		// gets frame from espcam and puts it in image sdram
-		alt_avalon_spi_command(SPI_0_BASE, 1, 1, &cam_set, IM_SIZE, &image_buffer, 0);
 
+		if (IORD_ALTERA_AVALON_PIO_DATA(KEY_BASE)) {
+			printf("SW\n");
+			cam_set = 18; // default settings except downscaled & "settings changed" = true
+
+			alt_avalon_spi_command(SPI_0_BASE, 1, 1, &cam_set, IM_SIZE, &image_buffer, 0);
+
+			// image width, image height, startx, starty, buffer
+			display_img(160, 120, 0, 0, image_buffer);
+
+			display_img(160, 120, 160, 0, image_buffer); // draw second frame next to first
+
+			display_img(160, 120, 0, 120, image_buffer);
+
+			display_img(160, 120, 160, 120, image_buffer);
+
+
+		} else {
+			printf("NO SW\n");
+			cam_set = 16; // default settings except "settings changed" = true
+
+			alt_avalon_spi_command(SPI_0_BASE, 1, 1, &cam_set, IM_SIZE, &image_buffer, 0);
+
+			// image width, image height, startx, starty, buffer
+			display_img(320, 240, 0, 0, image_buffer);
+
+		}
+
+
+
+
+
+
+
+		/*
+		 * downscaled top left
+		// iterate through all of the pixels and write the pixel data to pixel buffer
+		for (int i=0; i<120; i++){
+			for (int j=0; j<160; j++){
+				IOWR(PIX_BUFF_ADDR_BASE, 0, i*320+j);
+				IOWR(PIX_DATA_BASE, 0, image_buffer[160*i+319-j-1]>>4);
+			}
+
+		}
+		*/
+
+
+		// old full resolution code for later when add it back...
+		/*
 		// iterate through all of the pixels and write the pixel data to pixel buffer
 		for (int i=0; i<240; i++){
 			for (int j=0; j<320; j++){
@@ -132,6 +182,7 @@ int main()
 			}
 
 		}
+		*/
 		end_time = IORD_ALTERA_AVALON_PIO_DATA(USEC_COUNTER_PIO_BASE); // gets end time from counter
 
 		duration = end_time - start_time; // gets the time since frame started to frame finished
@@ -143,6 +194,18 @@ int main()
 
     return 0;
 }
+
+void display_img(int width, int height, int startx, int starty, alt_u8 buffer[IM_SIZE]) {
+
+	for (int i=starty; i<height+starty; i++){
+		for (int j=startx; j<width+startx; j++){
+			IOWR(PIX_BUFF_ADDR_BASE, 0, i*320+j);
+			IOWR(PIX_DATA_BASE, 0, buffer[width*i+319-j-1]>>4);
+		}
+
+	}
+}
+
 
 // function for displaying hex
 void display_fps(int duration) {
@@ -194,5 +257,5 @@ void display_fps(int duration) {
 	int hex_data = (display2 << 16) | (display1 << 8) | display0;
 
 	// Write to HEX1_BASE (Right 3 displays)
-	IOWR_32DIRECT(HEX1_BASE, 0, hex_data);
+	IOWR(HEX1_BASE, 0, hex_data);
 }
