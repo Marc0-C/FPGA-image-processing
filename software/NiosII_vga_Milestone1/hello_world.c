@@ -153,36 +153,6 @@ int main()
 
 		}
 
-
-
-
-
-
-
-		/*
-		 * downscaled top left
-		// iterate through all of the pixels and write the pixel data to pixel buffer
-		for (int i=0; i<120; i++){
-			for (int j=0; j<160; j++){
-				IOWR(PIX_BUFF_ADDR_BASE, 0, i*320+j);
-				IOWR(PIX_DATA_BASE, 0, image_buffer[160*i+319-j-1]>>4);
-			}
-
-		}
-		*/
-
-
-		// old full resolution code for later when add it back...
-		/*
-		// iterate through all of the pixels and write the pixel data to pixel buffer
-		for (int i=0; i<240; i++){
-			for (int j=0; j<320; j++){
-				IOWR(PIX_BUFF_ADDR_BASE, 0, i*320+j);
-				IOWR(PIX_DATA_BASE, 0, image_buffer[320*i+319-j-2]>>4);
-			}
-
-		}
-		*/
 		end_time = IORD_ALTERA_AVALON_PIO_DATA(USEC_COUNTER_PIO_BASE); // gets end time from counter
 
 		duration = end_time - start_time; // gets the time since frame started to frame finished
@@ -196,13 +166,14 @@ int main()
 }
 
 void display_img(int width, int height, int startx, int starty, alt_u8 buffer[IM_SIZE]) {
+	for (int i = 0; i < height; i++) {
+		for (int j = 0; j < width; j++) {
+			int screen_x = startx + j;
+			int screen_y = starty + i;
 
-	for (int i=starty; i<height+starty; i++){
-		for (int j=startx; j<width+startx; j++){
-			IOWR(PIX_BUFF_ADDR_BASE, 0, i*320+j);
-			IOWR(PIX_DATA_BASE, 0, buffer[width*i+319-j-1]>>4);
+			IOWR(PIX_BUFF_ADDR_BASE, 0, (screen_y * 320) + screen_x);
+			IOWR(PIX_DATA_BASE, 0, buffer[i * width + j] >> 4);
 		}
-
 	}
 }
 
