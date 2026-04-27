@@ -64,35 +64,58 @@ alt_u8 gyro_config[CONFIG_LENGHT] = {
 int main() {
     printf("processor1\n");
 
-    // muutex
+    // mutex
     alt_mutex_dev* mutex = altera_avalon_mutex_open(MUTEX_0_NAME);
 
     // gyro
+    /*
     alt_u8 gyro_data_out;
     for (int i = 0; i < 6; i += 2) {
         alt_avalon_spi_command(SPI_0_BASE, 0, 2, gyro_config + i, 0, &gyro_data_out, 0);
-    }
+    }*/
 
     alt_u8 readX = READ_X_AXIS;
+    alt_u8 readY = READ_Y_AXIS;
+    alt_u8 readZ = READ_Z_AXIS;
     alt_16 xData;
-    char cam_set = 0;
+    alt_16 yData;
+    alt_16 zData;
+
+    alt_u8 cam_set = 0;
 
     // buffer to hold SPI data before moving to SDRAM
-    static uint8_t local_cam_buffer[IM_SIZE];
-
+    static uint8_t image_buffer[IM_SIZE];
+    int framenum = 0;
     while (1) {
         // 1. Read Gyro (Processor 1 owns SPI)
-        alt_avalon_spi_command(SPI_0_BASE, 0, 1, &readX, 2, &xData, 0);
+        //alt_avalon_spi_command(SPI_0_BASE, 0, 1, &readX, 2, &xData, 0);
+        //alt_avalon_spi_command(SPI_0_BASE, 0, 1, &readY, 2, &yData, 0);
+        //alt_avalon_spi_command(SPI_0_BASE, 0, 1, &readZ, 2, &zData, 0);
+        //printf("X axis: %4d\t Y axis: %4d\t Z axis %4d\n", xData, yData, zData);
+
 
         // 2. Capture Frame from Camera into local buffer
-        alt_avalon_spi_command(SPI_0_BASE, 1, 1, &cam_set, IM_SIZE, local_cam_buffer, 0);
+        //spibase, CS, byte length, setting, n of bytes returned, where to put, flags
+        // use &imge_buffer instead?
+        alt_avalon_spi_command(SPI_0_BASE, 1, 1, &cam_set, IM_SIZE, image_buffer, 0);
 
         // 3. Critical Section: Copy to Shared Mailbox
+        altera_avalon_mutex_lock(mutex, 1);
+        //printf("just locked mutex \n");
         //if (altera_avalon_mutex_is_mine(mutex) || altera_avalon_mutex_lock(mutex, 1) == 0) {
         for (int i = 0; i < IM_SIZE; i++) {
-            IOWR_8DIRECT(SHARED_MAILBOX_BASE, i, local_cam_buffer[i]);
+        	//#define IOWR_8DIRECT(BASE, OFFSET, DATA)
+
+            IOWR_8DIRECT(SHARED_MAILBOX_BASE, i, image_buffer[i]);
+            // each image_buffer[i] is a byte, each 320 bytes is a row
         }
+        framenum += 1;
         altera_avalon_mutex_unlock(mutex);
+        //printf("just unlocked mutex \n");
+        for (volatile int i = 0; i<500000; i++){
+
+        }
+        //printf("sent frame %d to shared memory in sdram first pixel value: %d \n", framenum, image_buffer[0]);
 
     }
     return 0;
