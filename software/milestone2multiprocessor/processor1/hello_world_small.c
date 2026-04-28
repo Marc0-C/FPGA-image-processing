@@ -7,8 +7,8 @@
 
 // Shared Memory Definitions
 #define SHARED_MAILBOX_BASE 0x03FFF000
-#define IM_SIZE (240 * 320)
-
+//#define IM_SIZE (240 * 320)
+#define IM_SIZE (10)
 // Gyro write Registers
 #define BW_RATE 0x2c
 #define POWER_CONTROL 0x2d
@@ -62,7 +62,7 @@ alt_u8 gyro_config[CONFIG_LENGHT] = {
     POWER_CONTROL, 0x08};
 
 int main() {
-    printf("processor1\n");
+    //printf("processor1\n");
 
     // mutex
     alt_mutex_dev* mutex = altera_avalon_mutex_open(MUTEX_0_NAME);
@@ -97,7 +97,15 @@ int main() {
         // 2. Capture Frame from Camera into local buffer
         //spibase, CS, byte length, setting, n of bytes returned, where to put, flags
         // use &imge_buffer instead?
-        alt_avalon_spi_command(SPI_0_BASE, 1, 1, &cam_set, IM_SIZE, image_buffer, 0);
+        //alt_avalon_spi_command(SPI_0_BASE, 1, 1, &cam_set, IM_SIZE, image_buffer, 0);
+
+        // ARIFICIAL DATA TO MAKE SURE IT WORKS
+        for (int i = 0; i< IM_SIZE; i++){
+        	if (i<(IM_SIZE/2)){
+        		image_buffer[i] = 16;
+        	}else{image_buffer[i] = 18;}
+        }
+
 
         // 3. Critical Section: Copy to Shared Mailbox
         altera_avalon_mutex_lock(mutex, 1);
