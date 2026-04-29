@@ -64,7 +64,13 @@ alt_u8 gyro_config[CONFIG_LENGHT] = {
     INT_MAP, 0x20,
     POWER_CONTROL, 0x08};
 
+
+#define IM_SIZE (240 * 320)
+#define IM_SIZE_SMALL (120 * 160)
+
 void display_fps(int duration); // declare prototype above so no "implicit declaration" warnings, not needed but i dont like warnings
+
+void display_img(int width, int height, int startx, int starty, alt_u8 buffer[IM_SIZE]); // prototype to display images from buffer
 
 int main()
 {
@@ -89,16 +95,10 @@ int main()
     alt_u8 readY = READ_Y_AXIS;
     alt_u8 readZ = READ_Z_AXIS;
 
-    int mode = 2; //camera display mode (1 = 160x120, 2= 320x240)
-
     // camera stuff
-	int W = 160*mode;
-	int H = 120*mode;
+	alt_u8 cam_set = 18; // binary 000 10010 cam settings
 
-	#define IM_SIZE (W * H)
-	char cam_set = 0b00010000; // esp-cam settings set
-
-	char image_buffer[IM_SIZE];
+	alt_u8 image_buffer[IM_SIZE];
 
 	int start_time, end_time, duration;
 
@@ -126,26 +126,66 @@ int main()
 
 
 
-		// gets frame from espcam and puts it in image sdram
-		alt_avalon_spi_command(SPI_0_BASE, 1, 1, &cam_set, IM_SIZE, &image_buffer, 0);
 
-		// iterate through all of the pixels and write the pixel data to pixel buffer
-		if (mode == 2) {
-			for (int i=0; i<H; i++){
-				for (int j=0; j<W; j++){
-					IOWR(PIX_BUFF_ADDR_BASE, 0, i*W+j);
-					IOWR(PIX_DATA_BASE, 0, image_buffer[W*i+(W-1)-j-2]>>4);
-				}
-			}
-		}
+		if (IORD_ALTERA_AVALON_PIO_DATA(KEY_BASE)) {
 
-		if (mode == 1) {
-			for (int i=0; i<H; i++){
-				for (int j=0; j<W; j++){
-					IOWR(PIX_BUFF_ADDR_BASE, 0, i*W+j);
-					IOWR(PIX_DATA_BASE, 0, image_buffer[W*i+(W-1)-j-2]>>4);
-				}
+			printf("SW\n");
+			cam_set = 18; // default settings except downscaled & "settings changed" = true
+
+			alt_avalon_spi_command(SPI_0_BASE, 1, 1, &cam_set, IM_SIZE, &image_buffer, 0);
+
+			for (int i = 3; i < (IM_SIZE / IM_SIZE_SMALL); i++) {
+			    memcpy(&image_buffer[i * IM_SIZE_SMALL], image_buffer, IM_SIZE_SMALL);
 			}
+
+			// MODIFY MINI CAMERA THINGS HERE or in else if sections
+
+			if (-50<yData && yData<=100) {
+				// image width, image height, startx, starty, buffer
+				printf("hello");
+				display_img(160, 120, 0, 0, image_buffer);
+
+				display_img(160, 120, 160, 0, &image_buffer[IM_SIZE_SMALL]); // draw second frame next to first
+
+				display_img(160, 120, 0, 120, &image_buffer[IM_SIZE_SMALL*2]);
+
+				display_img(160, 120, 160, 120, &image_buffer[IM_SIZE_SMALL*3]);
+			} else if (100<yData) {
+				// image width, image height, startx, starty, buffer
+				printf("bye");
+				display_img(160, 120, 0, 0, image_buffer);
+
+				display_img(160, 120, 160, 0, image_buffer);
+
+				display_img(160, 120, 0, 120, image_buffer);
+
+				display_img(160, 120, 160, 120, image_buffer);
+			} else if (yData<=-50) {
+				printf("hellasdasdo");
+				//ydata range ~= [-260,-50]
+				//make to 0-3 settings (rotation_number)
+				//image_buffer << IM_SIZE_SMALL*rotation number
+				int rotation_number = mapfunc(yData, -260, -50, 1, 3);
+				// image width, image height, startx, starty, buffer
+				display_img(160, 120, 0, 0, &image_buffer[IM_SIZE_SMALL*(rotation_number)]);
+
+				display_img(160, 120, 160, 0, &image_buffer[IM_SIZE_SMALL*((1+rotation_number)%4)]);
+
+				display_img(160, 120, 0, 120, &image_buffer[IM_SIZE_SMALL*(2+rotation_number)%4]);
+
+				display_img(160, 120, 160, 120, &image_buffer[IM_SIZE_SMALL*(3+rotation_number)%4]);
+			}
+
+
+		} else {
+			printf("NO SW\n");
+			cam_set = 16; // default settings except "settings changed" = true
+
+			alt_avalon_spi_command(SPI_0_BASE, 1, 1, &cam_set, IM_SIZE, &image_buffer, 0);
+
+			// image width, image height, startx, starty, buffer
+			display_img(320, 240, 0, 0, image_buffer);
+
 		}
 
 		end_time = IORD_ALTERA_AVALON_PIO_DATA(USEC_COUNTER_PIO_BASE); // gets end time from counter
@@ -160,6 +200,23 @@ int main()
     return 0;
 }
 
+void display_img(int width, int height, int startx, int starty, alt_u8 buffer[IM_SIZE]) {
+	for (int i = 0; i < height; i++) {
+		for (int j = 0; j < width; j++) {
+			int screen_x = startx + j;
+			int screen_y = starty + i;
+
+			IOWR(PIX_BUFF_ADDR_BASE, 0, (screen_y * 320) + screen_x);
+			IOWR(PIX_DATA_BASE, 0, buffer[i * width + j] >> 4);
+		}
+	}
+}
+
+// map value range
+// referenced from ARDUINODOCS
+int mapfunc(alt_16 x, int in_min, int in_max, int out_min, int out_max) {
+  return (x - in_min) * (out_max - out_min) / (in_max - in_min) + out_min;
+}
 
 // function for displaying hex
 void display_fps(int duration) {
@@ -211,5 +268,5 @@ void display_fps(int duration) {
 	int hex_data = (display2 << 16) | (display1 << 8) | display0;
 
 	// Write to HEX1_BASE (Right 3 displays)
-	IOWR_32DIRECT(HEX1_BASE, 0, hex_data);
+	IOWR(HEX1_BASE, 0, hex_data);
 }
