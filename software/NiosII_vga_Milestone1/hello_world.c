@@ -66,6 +66,7 @@ alt_u8 gyro_config[CONFIG_LENGHT] = {
 
 
 #define IM_SIZE (240 * 320)
+#define THRESHOLD 75 // for accelerometer rotation to rotate frames in quad mode
 
 void display_fps(int duration); // declare prototype above so no "implicit declaration" warnings, not needed but i dont like warnings
 
@@ -101,6 +102,16 @@ int main()
 
 	int start_time, end_time, duration;
 
+	int quad_mode; // 0 = single mode, 1 = quad mode
+	int rotation = 0; // keeps track of acceleromter frame rotation for quad mode
+
+	// for rotated versions quad mode
+	int rot_top_left    = 0;
+	int rot_top_right   = 0;
+	int rot_bottom_left = 0;
+	int rot_bottom_right= 0;
+
+
 	// set them all 0 to init
 	for (int i=0; i<IM_SIZE; i++){
 		IOWR(PIX_BUFF_ADDR_BASE, 0, i);
@@ -122,35 +133,152 @@ int main()
 
 		printf("X axis: %4d\t Y axis: %4d\t Z axis %4d\n", xData, yData, zData);
 
+		int sw = IORD_ALTERA_AVALON_PIO_DATA(SW_BASE);
+
+		int top_left = (sw >> 0) & 0x3;  // SW[1:0]
+		int top_right = (sw >> 2) & 0x3;  // SW[3:2]
+		int bottom_left = (sw >> 4) & 0x3;  // SW[5:4]
+		int bottom_right = (sw >> 6) & 0x3;  // SW[7:6]
 
 
+		// debugging prints out the state of SW that correspond to the modes yep.
+		//printf("TL: %d | TR: %d | BL: %d | BR: %d\n", top_left, top_right, bottom_left, bottom_right);
 
 
-		if (IORD_ALTERA_AVALON_PIO_DATA(KEY_BASE)) {
-			printf("SW\n");
+		if ( IORD_ALTERA_AVALON_PIO_DATA(KEY_BASE) ) {
+			quad_mode = 1;
+
+		} else {
+			printf("KEY Pressed\n");
+			quad_mode = 0;
+		}
+
+		if (quad_mode) {
 			cam_set = 18; // default settings except downscaled & "settings changed" = true
 
 			alt_avalon_spi_command(SPI_0_BASE, 1, 1, &cam_set, IM_SIZE, &image_buffer, 0);
 
-			// image width, image height, startx, starty, buffer
-			display_img(160, 120, 0, 0, image_buffer);
+			// ROTATE with Accelerometer Y Axis.
+			// Y-axis rotation control
+			if (yData > 75) {
+			    rotation = (rotation + 1) % 4;
+			    printf("Rotated CW\n");
+			}
+			else if (yData < -75) {
+			    rotation = (rotation + 3) % 4; // -1 mod 4
+			    printf("Rotated CCW\n");
+			}
 
-			display_img(160, 120, 160, 0, image_buffer); // draw second frame next to first
+			// apply rotation mapping
+			if (rotation == 0) {
+			    rot_top_left     = top_left;
+			    rot_top_right    = top_right;
+			    rot_bottom_left  = bottom_left;
+			    rot_bottom_right = bottom_right;
+			}
+			else if (rotation == 1) {
+			    rot_top_left     = bottom_left;
+			    rot_top_right    = top_left;
+			    rot_bottom_left  = bottom_right;
+			    rot_bottom_right = top_right;
+			}
+			else if (rotation == 2) {
+			    rot_top_left     = bottom_right;
+			    rot_top_right    = bottom_left;
+			    rot_bottom_left  = top_right;
+			    rot_bottom_right = top_left;
+			}
+			else if (rotation == 3) {
+			    rot_top_left     = top_right;
+			    rot_top_right    = bottom_right;
+			    rot_bottom_left  = top_left;
+			    rot_bottom_right = bottom_left;
+			}
 
-			display_img(160, 120, 0, 120, image_buffer);
-
-			display_img(160, 120, 160, 120, image_buffer);
 
 
-		} else {
-			printf("NO SW\n");
+			// TOP LEFT
+			if (rot_top_left == 0) {
+			    display_img(160, 120, 0, 0, image_buffer, 0);
+			}
+			else if (rot_top_left == 1) {
+			    // image 1
+			}
+			else if (rot_top_left == 2) {
+			    // image 2
+			}
+			else if (rot_top_left == 3) {
+			    // image 3
+			}
+
+
+			// TOP RIGHT
+			if (rot_top_right == 0) {
+			    display_img(160, 120, 160, 0, image_buffer, 0);
+			}
+			else if (rot_top_right == 1) {
+			    // display image 1
+			}
+			else if (rot_top_right == 2) {
+			    // display image 2
+			}
+			else if (rot_top_right == 3) {
+			    // display image 3
+			}
+
+
+			// BOTTOM LEFT
+			if (rot_bottom_left == 0) {
+			    display_img(160, 120, 0, 120, image_buffer, 0);
+			}
+			else if (rot_bottom_left == 1) {
+			    // display image 1
+			}
+			else if (rot_bottom_left == 2) {
+			    // display image 2
+			}
+			else if (rot_bottom_left == 3) {
+			    // display image 3
+			}
+			else if (rot_bottom_left == 3) {
+			    // display image 3
+			}
+
+
+			// BOTTOM RIGHT
+			if (rot_bottom_right == 0) {
+			    display_img(160, 120, 160, 120, image_buffer, 0);
+			}
+			else if (rot_bottom_right == 1) {
+			    // display image 1
+			}
+			else if (rot_bottom_right == 2) {
+			    // display image 2
+			}
+			else if (rot_bottom_right == 3) {
+			    // display image 3
+			}
+
+
+		} else { // SINGLE MODE
 			cam_set = 16; // default settings except "settings changed" = true
 
 			alt_avalon_spi_command(SPI_0_BASE, 1, 1, &cam_set, IM_SIZE, &image_buffer, 0);
 
-			// image width, image height, startx, starty, buffer
-			display_img(320, 240, 0, 0, image_buffer);
-
+			if (top_left == 0) {
+				// display image 0
+				// image width, image height, startx, starty, buffer
+				display_img(320, 240, 0, 0, image_buffer, 0);
+			}
+			else if (top_left == 1) {
+			    // display image 1
+			}
+			else if (top_left == 2) {
+			    // display image 2
+			}
+			else if (top_left == 3) {
+			    // display image 3
+			}
 		}
 
 		end_time = IORD_ALTERA_AVALON_PIO_DATA(USEC_COUNTER_PIO_BASE); // gets end time from counter
@@ -168,13 +296,21 @@ int main()
 void display_img(int width, int height, int startx, int starty, alt_u8 *buffer, int startAddress) {
     alt_u8 *img = buffer + startAddress;
 
+    // only for debugging, weird black pixel check value of certain adresses
+    //printf("TL: %d\n", buffer[0] >> 4);
+    //printf("TR: %d\n", buffer[width - 1] >> 4);
+    //printf("BL: %d\n", buffer[(height - 1) * width] >> 4);
+    //printf("BR: %d\n", buffer[width * height - 1] >> 4);
+
     for (int i = 0; i < height; i++) {
         for (int j = 0; j < width; j++) {
             int screen_x = startx + j;
             int screen_y = starty + i;
 
             IOWR(PIX_BUFF_ADDR_BASE, 0, (screen_y * 320) + screen_x);
-            IOWR(PIX_DATA_BASE, 0, img[i * width + j] >> 4);
+            IOWR(PIX_DATA_BASE, 0, img[i * width + j - 1] >> 4); // bit shift by 4 coz 8 bit value only have 4 bits colour
+
+
         }
     }
 }
