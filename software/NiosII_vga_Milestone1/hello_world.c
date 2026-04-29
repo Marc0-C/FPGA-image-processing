@@ -69,7 +69,7 @@ alt_u8 gyro_config[CONFIG_LENGHT] = {
 
 void display_fps(int duration); // declare prototype above so no "implicit declaration" warnings, not needed but i dont like warnings
 
-void display_img(int width, int height, int startx, int starty, alt_u8 buffer[IM_SIZE]); // prototype to display images from buffer
+void display_img(int width, int height, int startx, int starty, alt_u8 buffer[IM_SIZE], int startAddress); // prototype to display images from buffer
 
 int main()
 {
@@ -165,16 +165,18 @@ int main()
     return 0;
 }
 
-void display_img(int width, int height, int startx, int starty, alt_u8 buffer[IM_SIZE]) {
-	for (int i = 0; i < height; i++) {
-		for (int j = 0; j < width; j++) {
-			int screen_x = startx + j;
-			int screen_y = starty + i;
+void display_img(int width, int height, int startx, int starty, alt_u8 *buffer, int startAddress) {
+    alt_u8 *img = buffer + startAddress;
 
-			IOWR(PIX_BUFF_ADDR_BASE, 0, (screen_y * 320) + screen_x);
-			IOWR(PIX_DATA_BASE, 0, buffer[i * width + j] >> 4);
-		}
-	}
+    for (int i = 0; i < height; i++) {
+        for (int j = 0; j < width; j++) {
+            int screen_x = startx + j;
+            int screen_y = starty + i;
+
+            IOWR(PIX_BUFF_ADDR_BASE, 0, (screen_y * 320) + screen_x);
+            IOWR(PIX_DATA_BASE, 0, img[i * width + j] >> 4);
+        }
+    }
 }
 
 
