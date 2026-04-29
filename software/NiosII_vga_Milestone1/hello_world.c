@@ -145,12 +145,15 @@ int main()
 		//printf("TL: %d | TR: %d | BL: %d | BR: %d\n", top_left, top_right, bottom_left, bottom_right);
 
 
-		if ( IORD_ALTERA_AVALON_PIO_DATA(KEY_BASE) ) {
-			quad_mode = 1;
 
-		} else {
+		//toggle the quad and single modes
+		if ( IORD_ALTERA_AVALON_PIO_DATA(KEY_BASE) == 0) {
 			printf("KEY Pressed\n");
-			quad_mode = 0;
+			if (quad_mode) {
+				quad_mode = 0;
+			} else {
+				quad_mode = 1;
+			}
 		}
 
 		if (quad_mode) {
