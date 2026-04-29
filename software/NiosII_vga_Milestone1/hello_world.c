@@ -12,6 +12,13 @@
 #include <altera_avalon_spi_regs.h>
 #include <altera_avalon_pio_regs.h>
 
+//for interrupts
+#include "sys/alt_irq.h"
+
+volatile int quad_mode = 0; // 0 = single, 1 = quad. volatile because changes outside of main loop
+volatile int lastEdge = 0;
+
+
 // Gyro write Registers
 #define BW_RATE 0x2c
 #define POWER_CONTROL 0x2d
@@ -72,6 +79,21 @@ void display_fps(int duration); // declare prototype above so no "implicit decla
 
 void display_img(int width, int height, int startx, int starty, alt_u8 buffer[IM_SIZE], int startAddress); // prototype to display images from buffer
 
+// ISR function for KEY PRESSES
+void key_isr(void* context, alt_u32 id)
+{
+    volatile int* edge_capture_ptr = (volatile int*) context;
+    int edge = *edge_capture_ptr;
+
+    // clear interrupt FIRST
+    IOWR_ALTERA_AVALON_PIO_EDGE_CAP(KEY_BASE, 0);
+
+    if (edge & 0x1) {
+        quad_mode = !quad_mode;
+    }
+    printf("Interrupt KEY Pressed\n");
+}
+
 int main()
 {
     printf("Hello from Nios II!\n"); // basic print statement to ensure UART is working
@@ -102,7 +124,7 @@ int main()
 
 	int start_time, end_time, duration;
 
-	int quad_mode; // 0 = single mode, 1 = quad mode
+	//int quad_mode = 0; // 0 = single mode, 1 = quad mode // moved to above because of interrupt now
 	int rotation = 0; // keeps track of acceleromter frame rotation for quad mode
 
 	// for rotated versions quad mode
@@ -120,6 +142,26 @@ int main()
 
 	// Set other 3 hex to blank since dont need them yet:
 	IOWR_32DIRECT(HEX2_BASE, 0, 0xFFFFFF);
+
+
+	// FOR INTERRUPTS:
+
+	void* edge_capture_ptr = (void*)0;
+
+	    // clear edge capture register
+	    IOWR_ALTERA_AVALON_PIO_EDGE_CAP(KEY_BASE, 0);
+
+	    // enable interrupt for key 0 (bitmask depends on your setup)
+	    IOWR_ALTERA_AVALON_PIO_IRQ_MASK(KEY_BASE, 0x1);
+
+	    // register ISR
+	    alt_ic_isr_register(
+	        KEY_IRQ_INTERRUPT_CONTROLLER_ID,
+	        KEY_IRQ,
+	        key_isr,
+	        edge_capture_ptr,
+	        0x0
+	    );
 
     while (1)
     {
@@ -147,14 +189,15 @@ int main()
 
 
 		//toggle the quad and single modes
-		if ( IORD_ALTERA_AVALON_PIO_DATA(KEY_BASE) == 0) {
+
+		/*if ( IORD_ALTERA_AVALON_PIO_DATA(KEY_BASE) == 0) {
 			printf("KEY Pressed\n");
 			if (quad_mode) {
 				quad_mode = 0;
 			} else {
 				quad_mode = 1;
 			}
-		}
+		}*/
 
 		if (quad_mode) {
 			cam_set = 18; // default settings except downscaled & "settings changed" = true
