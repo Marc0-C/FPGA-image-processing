@@ -59,8 +59,12 @@ int main() {
         end_time = IORD_ALTERA_AVALON_PIO_DATA(USEC_COUNTER_PIO_BASE);
         duration = end_time - start_time;
         display_fps(duration);
-        //for (volatile int i = 0; i<500000; i++){}
-        //printf("duration %d", duration);
+        /*
+        for (volatile int i = 0; i<500000; i++){}
+        if (framenum%20 == 0){
+        	printf("duration %d", duration);
+        }*/
+
     }
     return 0;
 }
@@ -71,9 +75,11 @@ void display_fps(int duration) {
                             0b10010010, 0b10000010, 0b11111000, 0b10000000, 0b10010000};
     if (duration == 0) return;
     float fps = 1000000.0 / duration;
-    int d2 = (int)fps;
+    int d3 = ((int)fps / 10) % 10;
+    int d2 = (int)fps % 10;
     int d1 = (int)(fps * 10.0) % 10;
     int d0 = (int)(fps * 100.0) % 10;
-    int hex_data = ((hex_lookup[d2] & 0x7F) << 16) | (hex_lookup[d1] << 8) | hex_lookup[d0];
+    //int hex_data = ((hex_lookup[d2] & 0x7F) << 16) | (hex_lookup[d1] << 8) | hex_lookup[d0];
+    int hex_data = (hex_lookup[d3] << 16) | ((hex_lookup[d2] & 0x7F) << 8) | hex_lookup[d1];
     IOWR_32DIRECT(HEX1_BASE, 0, hex_data);
 }
