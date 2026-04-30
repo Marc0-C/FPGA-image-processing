@@ -1,4 +1,4 @@
-void flip_image(char image_data[], char image_return[], int axis, int size){
+void flip_image(alt_u8 image_data[], alt_u8 image_return[], int axis, int size){
 
 	int im_width = 320;
 	int im_height = 240;
@@ -20,7 +20,7 @@ void flip_image(char image_data[], char image_return[], int axis, int size){
 	return;
 }
 
-void blur(char image_data[], char image_return[], int size){
+void blur(alt_u8 image_data[], alt_u8 image_return[], int size){
 	int im_width = 320;
 	int im_height = 240;
 
@@ -42,11 +42,10 @@ void blur(char image_data[], char image_return[], int size){
 					sum += image_data[ii*im_width+jj];
 				}
 			}
-			image_return[i+j] = size / 9;
+			image_return[i*im_width+j] = sum / 9;
 		}
 	}
 	return;
-
 }
 
 
