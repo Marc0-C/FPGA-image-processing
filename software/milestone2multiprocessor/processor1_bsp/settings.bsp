@@ -2,8 +2,8 @@
 <sch:Settings xmlns:sch="http://www.altera.com/embeddedsw/bsp/schema">
         <BspType>hal</BspType>
         <BspVersion>default</BspVersion>
-        <BspGeneratedTimeStamp>28-Apr-2026 17:50:37</BspGeneratedTimeStamp>
-        <BspGeneratedUnixTimeStamp>1777362637512</BspGeneratedUnixTimeStamp>
+        <BspGeneratedTimeStamp>30-Apr-2026 11:29:31</BspGeneratedTimeStamp>
+        <BspGeneratedUnixTimeStamp>1777512571829</BspGeneratedUnixTimeStamp>
         <BspGeneratedLocation>C:\Users\julia\practicalsECE3073\PROJECT\Timothycocks-ECE3073-Project2026-GroupA06\software\milestone2multiprocessor\processor1_bsp</BspGeneratedLocation>
         <BspSettingsFile>settings.bsp</BspSettingsFile>
         <SopcDesignFile>..\..\..\nios_system.sopcinfo</SopcDesignFile>
@@ -918,9 +918,9 @@
                 <regionName>new_sdram_controller_0</regionName>
                 <memoryName>new_sdram_controller_0</memoryName>
                 <offset>33554464</offset>
-                <size>33550304</size>
+                <size>20000000</size>
                 <baseAddress>0x2000020</baseAddress>
-                <addressRange>0x02000020 - 0x03FFEFFF</addressRange>
+                <addressRange>0x02000020 - 0x03312D1F</addressRange>
         </LinkerRegion>
         <MemoryMap>
                 <slaveDescriptor>new_sdram_controller_0</slaveDescriptor>

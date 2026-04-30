@@ -115,7 +115,7 @@ module top_level (
         //.spi_0_external_SS_n    ({GPIO[10], GSENSOR_CS_N}
 		  
 		  // --- Counter ---
-		  .usec_counter_pio_export_export(current_usec),
+		  .usec_counter_pio_export_export(current_usec)
     );
 ///////////////////////
   
