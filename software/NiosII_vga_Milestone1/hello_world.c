@@ -186,6 +186,8 @@ int main()
 		//printf("TL: %d | TR: %d | BL: %d | BR: %d\n", top_left, top_right, bottom_left, bottom_right);
 
 
+		// debugging prints out the state of SW that correspond to the modes yep.
+		//printf("TL: %d | TR: %d | BL: %d | BR: %d\n", top_left, top_right, bottom_left, bottom_right);
 
 		//toggle the quad and single modes
 
@@ -213,6 +215,16 @@ int main()
 			    rotation = (rotation + 3) % 4; // -1 mod 4
 			    printf("Rotated CCW\n");
 			}
+			else if (rot_top_left == 1) {
+			    // image 1
+			}
+			else if (rot_top_left == 2) {
+			    // image 2
+			}
+			else if (rot_top_left == 3) {
+			    // image 3
+			}
+
 
 			// apply rotation mapping
 			if (rotation == 0) {
