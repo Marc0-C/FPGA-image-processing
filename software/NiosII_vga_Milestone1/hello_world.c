@@ -14,8 +14,6 @@
 //for interrupts
 #include "sys/alt_irq.h"
 
-
-// TODO Placeholder for selecting quad and single mode
 volatile int quad_mode = 0; // 0 = single, 1 = quad. volatile because changes outside of main loop
 volatile int lastEdge = 0;
 
@@ -74,13 +72,26 @@ alt_u8 gyro_config[CONFIG_LENGHT] = {
 
 
 #define IM_SIZE (240 * 320)
-#define THRESHOLD 75 // for accelerometer rotation to rotate frames in quad mode (TODO)
+#define THRESHOLD 75 // for accelerometer rotation to rotate frames in quad mode
 
 void display_fps(int duration); // declare prototype above so no "implicit declaration" warnings, not needed but i dont like warnings
 
 void display_img(int width, int height, int startx, int starty, alt_u8 buffer[IM_SIZE], int startAddress); // prototype to display images from buffer
 
-// TODO: ISR function for KEY PRESSES
+// ISR function for KEY PRESSES
+void key_isr(void* context, alt_u32 id)
+{
+    volatile int* edge_capture_ptr = (volatile int*) context;
+    int edge = *edge_capture_ptr;
+
+    // clear interrupt FIRST
+    IOWR_ALTERA_AVALON_PIO_EDGE_CAP(KEY_BASE, 0);
+
+    if (edge & 0x1) {
+        quad_mode = !quad_mode;
+    }
+    printf("Interrupt KEY Pressed\n");
+}
 
 int main()
 {
@@ -133,8 +144,23 @@ int main()
 
 
 	// FOR INTERRUPTS:
-	// TODO: Setup mode switch interrupt
 
+	void* edge_capture_ptr = (void*)0;
+
+	    // clear edge capture register
+	    IOWR_ALTERA_AVALON_PIO_EDGE_CAP(KEY_BASE, 0);
+
+	    // enable interrupt for key 0 (bitmask depends on your setup)
+	    IOWR_ALTERA_AVALON_PIO_IRQ_MASK(KEY_BASE, 0x1);
+
+	    // register ISR
+	    alt_ic_isr_register(
+	        KEY_IRQ_INTERRUPT_CONTROLLER_ID,
+	        KEY_IRQ,
+	        key_isr,
+	        edge_capture_ptr,
+	        0x0
+	    );
 
     while (1)
     {
@@ -160,6 +186,19 @@ int main()
 		//printf("TL: %d | TR: %d | BL: %d | BR: %d\n", top_left, top_right, bottom_left, bottom_right);
 
 
+		// debugging prints out the state of SW that correspond to the modes yep.
+		//printf("TL: %d | TR: %d | BL: %d | BR: %d\n", top_left, top_right, bottom_left, bottom_right);
+
+		//toggle the quad and single modes
+
+		/*if ( IORD_ALTERA_AVALON_PIO_DATA(KEY_BASE) == 0) {
+			printf("KEY Pressed\n");
+			if (quad_mode) {
+				quad_mode = 0;
+			} else {
+				quad_mode = 1;
+			}
+		}*/
 
 		if (quad_mode) {
 			cam_set = 18; // default settings except downscaled & "settings changed" = true
@@ -167,8 +206,25 @@ int main()
 			alt_avalon_spi_command(SPI_0_BASE, 1, 1, &cam_set, IM_SIZE, image_buffer, 0);
 
 			// ROTATE with Accelerometer Y Axis.
+			// Y-axis rotation control
+			if (yData > 75) {
+			    rotation = (rotation + 1) % 4;
+			    printf("Rotated CW\n");
+			}
+			else if (yData < -75) {
+			    rotation = (rotation + 3) % 4; // -1 mod 4
+			    printf("Rotated CCW\n");
+			}
+			else if (rot_top_left == 1) {
+			    // image 1
+			}
+			else if (rot_top_left == 2) {
+			    // image 2
+			}
+			else if (rot_top_left == 3) {
+			    // image 3
+			}
 
-			// TODO: Check if rotated
 
 			// apply rotation mapping
 			if (rotation == 0) {
@@ -177,7 +233,24 @@ int main()
 			    rot_bottom_left  = bottom_left;
 			    rot_bottom_right = bottom_right;
 			}
-			// other stuff tbd later in task 1
+			else if (rotation == 1) {
+			    rot_top_left     = bottom_left;
+			    rot_top_right    = top_left;
+			    rot_bottom_left  = bottom_right;
+			    rot_bottom_right = top_right;
+			}
+			else if (rotation == 2) {
+			    rot_top_left     = bottom_right;
+			    rot_top_right    = bottom_left;
+			    rot_bottom_left  = top_right;
+			    rot_bottom_right = top_left;
+			}
+			else if (rotation == 3) {
+			    rot_top_left     = top_right;
+			    rot_top_right    = bottom_right;
+			    rot_bottom_left  = top_left;
+			    rot_bottom_right = bottom_left;
+			}
 
 
 
