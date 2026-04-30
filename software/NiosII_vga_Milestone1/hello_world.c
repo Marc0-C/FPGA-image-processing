@@ -5,7 +5,6 @@
  */
 
 #include <stdio.h>
-#include <stdint.h>
 #include "system.h"
 #include "io.h"
 #include <altera_avalon_spi.h>
@@ -15,6 +14,8 @@
 //for interrupts
 #include "sys/alt_irq.h"
 
+
+// TODO Placeholder for selecting quad and single mode
 volatile int quad_mode = 0; // 0 = single, 1 = quad. volatile because changes outside of main loop
 volatile int lastEdge = 0;
 
@@ -73,26 +74,13 @@ alt_u8 gyro_config[CONFIG_LENGHT] = {
 
 
 #define IM_SIZE (240 * 320)
-#define THRESHOLD 75 // for accelerometer rotation to rotate frames in quad mode
+#define THRESHOLD 75 // for accelerometer rotation to rotate frames in quad mode (TODO)
 
 void display_fps(int duration); // declare prototype above so no "implicit declaration" warnings, not needed but i dont like warnings
 
 void display_img(int width, int height, int startx, int starty, alt_u8 buffer[IM_SIZE], int startAddress); // prototype to display images from buffer
 
-// ISR function for KEY PRESSES
-void key_isr(void* context, alt_u32 id)
-{
-    volatile int* edge_capture_ptr = (volatile int*) context;
-    int edge = *edge_capture_ptr;
-
-    // clear interrupt FIRST
-    IOWR_ALTERA_AVALON_PIO_EDGE_CAP(KEY_BASE, 0);
-
-    if (edge & 0x1) {
-        quad_mode = !quad_mode;
-    }
-    printf("Interrupt KEY Pressed\n");
-}
+// TODO: ISR function for KEY PRESSES
 
 int main()
 {
@@ -145,33 +133,18 @@ int main()
 
 
 	// FOR INTERRUPTS:
+	// TODO: Setup mode switch interrupt
 
-	void* edge_capture_ptr = (void*)0;
-
-	    // clear edge capture register
-	    IOWR_ALTERA_AVALON_PIO_EDGE_CAP(KEY_BASE, 0);
-
-	    // enable interrupt for key 0 (bitmask depends on your setup)
-	    IOWR_ALTERA_AVALON_PIO_IRQ_MASK(KEY_BASE, 0x1);
-
-	    // register ISR
-	    alt_ic_isr_register(
-	        KEY_IRQ_INTERRUPT_CONTROLLER_ID,
-	        KEY_IRQ,
-	        key_isr,
-	        edge_capture_ptr,
-	        0x0
-	    );
 
     while (1)
     {
     	start_time = IORD_ALTERA_AVALON_PIO_DATA(USEC_COUNTER_PIO_BASE); // gets start time from counter
 
-		alt_avalon_spi_command(SPI_0_BASE, 0, 1, &readX, 2, &xData, 0);
+		alt_avalon_spi_command(SPI_0_BASE, 0, 1, &readX, 2, (alt_u8*)&xData, 0); // have to cast to u8 because otherwise warning even though acceleromter sends 16 bits
 
-		alt_avalon_spi_command(SPI_0_BASE, 0, 1, &readY, 2, &yData, 0);
+		alt_avalon_spi_command(SPI_0_BASE, 0, 1, &readY, 2, (alt_u8*)&yData, 0);
 
-		alt_avalon_spi_command(SPI_0_BASE, 0, 1, &readZ, 2, &zData, 0);
+		alt_avalon_spi_command(SPI_0_BASE, 0, 1, &readZ, 2, (alt_u8*)&zData, 0);
 
 		printf("X axis: %4d\t Y axis: %4d\t Z axis %4d\n", xData, yData, zData);
 
@@ -188,32 +161,14 @@ int main()
 
 
 
-		//toggle the quad and single modes
-
-		/*if ( IORD_ALTERA_AVALON_PIO_DATA(KEY_BASE) == 0) {
-			printf("KEY Pressed\n");
-			if (quad_mode) {
-				quad_mode = 0;
-			} else {
-				quad_mode = 1;
-			}
-		}*/
-
 		if (quad_mode) {
 			cam_set = 18; // default settings except downscaled & "settings changed" = true
 
-			alt_avalon_spi_command(SPI_0_BASE, 1, 1, &cam_set, IM_SIZE, &image_buffer, 0);
+			alt_avalon_spi_command(SPI_0_BASE, 1, 1, &cam_set, IM_SIZE, image_buffer, 0);
 
 			// ROTATE with Accelerometer Y Axis.
-			// Y-axis rotation control
-			if (yData > 75) {
-			    rotation = (rotation + 1) % 4;
-			    printf("Rotated CW\n");
-			}
-			else if (yData < -75) {
-			    rotation = (rotation + 3) % 4; // -1 mod 4
-			    printf("Rotated CCW\n");
-			}
+
+			// TODO: Check if rotated
 
 			// apply rotation mapping
 			if (rotation == 0) {
@@ -222,24 +177,7 @@ int main()
 			    rot_bottom_left  = bottom_left;
 			    rot_bottom_right = bottom_right;
 			}
-			else if (rotation == 1) {
-			    rot_top_left     = bottom_left;
-			    rot_top_right    = top_left;
-			    rot_bottom_left  = bottom_right;
-			    rot_bottom_right = top_right;
-			}
-			else if (rotation == 2) {
-			    rot_top_left     = bottom_right;
-			    rot_top_right    = bottom_left;
-			    rot_bottom_left  = top_right;
-			    rot_bottom_right = top_left;
-			}
-			else if (rotation == 3) {
-			    rot_top_left     = top_right;
-			    rot_top_right    = bottom_right;
-			    rot_bottom_left  = top_left;
-			    rot_bottom_right = bottom_left;
-			}
+			// other stuff tbd later in task 1
 
 
 
@@ -309,7 +247,7 @@ int main()
 		} else { // SINGLE MODE
 			cam_set = 16; // default settings except "settings changed" = true
 
-			alt_avalon_spi_command(SPI_0_BASE, 1, 1, &cam_set, IM_SIZE, &image_buffer, 0);
+			alt_avalon_spi_command(SPI_0_BASE, 1, 1, &cam_set, IM_SIZE, image_buffer, 0);
 
 			if (top_left == 0) {
 				// display image 0
@@ -364,7 +302,7 @@ void display_img(int width, int height, int startx, int starty, alt_u8 *buffer, 
 
 // function for displaying hex
 void display_fps(int duration) {
-	uint8_t hex_lookup[] = { // map numbers to corresponding 7 seg bits being on (hex is like inverse, so 1 = off) from 2072 lol
+	alt_u8 hex_lookup[] = { // map numbers to corresponding 7 seg bits being on (hex is like inverse, so 1 = off) from 2072 lol
 		//8th bit always 1 since that is the decimal point, toggle that manually later
 	    0b11000000, // 0
 	    0b11111001, // 1
@@ -401,9 +339,9 @@ void display_fps(int duration) {
 	int digit0 = (int)(fps * 100.0) % 10; 	// hundredths
 
 	// write FPS to respective displays:
-	uint8_t display2 = hex_lookup[digit2];
-	uint8_t display1 = hex_lookup[digit1];
-	uint8_t display0 = hex_lookup[digit0];
+	alt_u8 display2 = hex_lookup[digit2];
+	alt_u8 display1 = hex_lookup[digit1];
+	alt_u8 display0 = hex_lookup[digit0];
 
 	// add decimal point to ones digit by anding with 8th bit as 0
 	display2 = display2 & 0b01111111;
