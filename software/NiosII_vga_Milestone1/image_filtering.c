@@ -20,3 +20,33 @@ void flip_image(char image_data[], char image_return[], int axis, int size){
 	return;
 }
 
+void blur(char image_data[], char image_return[], int size){
+	int im_width = 320;
+	int im_height = 240;
+
+	im_width >>= size;
+	im_height >>= size;
+
+	for (int i = 0; i < im_height; i++){
+		for (int j = 0; j < im_width; j++){
+			int sum = 0;
+			for (int ki = -1; ki < 2; ki++){
+				for (int kj = -1; kj < 2; kj++){
+					int ii = i + ki;
+					int jj = j + kj;
+					if (ii < 0) ii = 0;
+					if (ii >= im_height) ii = im_height - 1;
+					if (jj < 0) jj = 0;
+					if (jj >= im_width) jj = im_width - 1;
+
+					sum += image_data[ii*im_width+jj];
+				}
+			}
+			image_return[i+j] = size / 9;
+		}
+	}
+	return;
+
+}
+
+
