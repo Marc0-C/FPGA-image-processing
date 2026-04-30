@@ -196,36 +196,3 @@ void display_fps(int duration) {
 	// Write to HEX1_BASE (Right 3 displays)
 	IOWR_32DIRECT(HEX1_BASE, 0, hex_data);
 }
-
-
-void flip_image(char image_data[], char image_return[], int axis, int size){
-
-	int im_width = 320;
-	int im_height = 240;
-
-	im_width >>= size;
-	im_height >>= size;
-
-	int i_axis;
-	int i_inc;
-	int j_axis;
-	int j_inc;
-
-	if (axis == 0) {
-		i_axis = im_width;
-		i_inc = 1;
-		j_axis = im_height*im_width;
-		j_inc = im_width;
-	} else {
-		i_axis = im_height*im_width;
-		i_inc = im_width;
-		j_axis = im_width;
-		j_inc = 1;
-	}
-
-	for (int i = 0; i < i_axis; i += i_inc){
-		for (int j = 0; j < j_axis; j += j_inc){
-			image_return[j + i] = image_data[i+j_axis-j_inc-j];
-		}
-	}
-}
