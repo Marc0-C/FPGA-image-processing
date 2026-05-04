@@ -67,11 +67,14 @@ void edge_detector(alt_u8 image_data[], alt_u8 image_return[], int size){
 	int g_x;
 	int g_y;
 	int g;
+	int thresh = 100;
+	int white = 15<<4;
 
 	for (int i = 0; i < im_height; i++){
 		for (int j = 0; j < im_width; j++){
 			g_x = 0;
 			g_y = 0;
+
 			for (int ki = -1; ki < 2; ki++){
 				for (int kj = -1; kj < 2; kj++){
 					int ii = i + ki;
@@ -85,8 +88,8 @@ void edge_detector(alt_u8 image_data[], alt_u8 image_return[], int size){
 				}
 			}
 			g = abs(g_x) + abs(g_y);
-			if (g > 100){
-				image_return[i*im_width+j] = 15<<4;
+			if (g > thresh){
+				image_return[i*im_width+j] = white;
 			} else {
 				image_return[i*im_width+j] = 0;
 			}
