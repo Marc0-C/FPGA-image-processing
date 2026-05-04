@@ -68,18 +68,14 @@ void edge_detector(char image_data[], char image_return[], int size){
 	int g_y;
 	int g;
 
-	for (int i = 0; i < im_height; i++){
-		for (int j = 0; j < im_width; j++){
+	for (int i = 1; i < im_height-1; i++){
+		for (int j = 1; j < im_width-1; j++){
 			g_x = 0;
 			g_y = 0;
 			for (int ki = -1; ki < 2; ki++){
 				for (int kj = -1; kj < 2; kj++){
 					int ii = i + ki;
 					int jj = j + kj;
-					if (ii < 0) ii = 0;
-					if (ii >= im_height) ii = im_height - 1;
-					if (jj < 0) jj = 0;
-					if (jj >= im_width) jj = im_width - 1;
 					g_x += image_data[ii*im_width+jj]*sobel_x[(ki+1)*3+kj+1];
 					g_y += image_data[ii*im_width+jj]*sobel_y[(ki+1)*3+kj+1];
 				}
@@ -92,5 +88,30 @@ void edge_detector(char image_data[], char image_return[], int size){
 			}
 		}
 	}
+
+	for (int i = 0; i < im_height; i += im_height-1){
+			for (int j = 0; j < im_width; j += im_width-1){
+				g_x = 0;
+				g_y = 0;
+				for (int ki = -1; ki < 2; ki++){
+					for (int kj = -1; kj < 2; kj++){
+						int ii = i + ki;
+						int jj = j + kj;
+						if (ii < 0) ii = 0;
+						if (ii >= im_height) ii = im_height - 1;
+						if (jj < 0) jj = 0;
+						if (jj >= im_width) jj = im_width - 1;
+						g_x += image_data[ii*im_width+jj]*sobel_x[(ki+1)*3+kj+1];
+						g_y += image_data[ii*im_width+jj]*sobel_y[(ki+1)*3+kj+1];
+					}
+				}
+				g = abs(g_x) + abs(g_y);
+				if (g > 100){
+					image_return[i*im_width+j] = 15<<4;
+				} else {
+					image_return[i*im_width+j] = 0;
+				}
+			}
+		}
 	return;
 }
