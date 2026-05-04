@@ -67,26 +67,35 @@ void edge_detector(alt_u8 image_data[], alt_u8 image_return[], int size){
 	int g_x;
 	int g_y;
 	int g;
+	int thresh = 100;
+	int white = 15<<4;
 
-	for (int i = 0; i < im_height; i++){
-		for (int j = 0; j < im_width; j++){
+	alt_u8 (*top)[3];
+	alt_u8 (*mid)[3];
+	alt_u8 (*bot)[3];
+
+	for (int j = 1; j < im_width-1; j++){
+		for (int i = 0; i < im_height; i++){
 			g_x = 0;
 			g_y = 0;
-			for (int ki = -1; ki < 2; ki++){
-				for (int kj = -1; kj < 2; kj++){
-					int ii = i + ki;
-					int jj = j + kj;
-					if (ii < 0) ii = 0;
-					if (ii >= im_height) ii = im_height - 1;
-					if (jj < 0) jj = 0;
-					if (jj >= im_width) jj = im_width - 1;
-					g_x += image_data[ii*im_width+jj]*sobel_x[(ki+1)*3+kj+1];
-					g_y += image_data[ii*im_width+jj]*sobel_y[(ki+1)*3+kj+1];
-				}
+
+			if (i == 0){
+				mid = &image_data[j-1];
+				bot = mid;
 			}
+			top = mid;
+			mid = bot;
+			if (i != im_height-1) {
+				bot = &image_data[(i+1)*im_width+j-1];
+			}
+
+			g_x = *top[0]+2*(*mid[0])+*bot[0]-(*top[2]+2*(*mid[2])+*bot[2]);
+			g_y = *top[0]+2*(*top[1])+*top[2]-(*bot[0]+2*(*bot[1])+*bot[2]);
+
+
 			g = abs(g_x) + abs(g_y);
-			if (g > 100){
-				image_return[i*im_width+j] = 15<<4;
+			if (g > thresh){
+				image_return[i*im_width+j] = white;
 			} else {
 				image_return[i*im_width+j] = 0;
 			}
