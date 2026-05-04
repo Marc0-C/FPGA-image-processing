@@ -113,6 +113,5 @@ void edge_detector(char image_data[], char image_return[], int size){
 				}
 			}
 		}
-
 	return;
 }
