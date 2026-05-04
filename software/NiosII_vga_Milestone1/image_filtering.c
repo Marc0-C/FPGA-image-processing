@@ -79,9 +79,23 @@ void edge_detector(alt_u8 image_data[], alt_u8 image_return[], int size){
 			g_x = 0;
 			g_y = 0;
 
+<<<<<<< HEAD
 			if (i == 0){
 				mid = &image_data[j-1];
 				bot = mid;
+=======
+			for (int ki = -1; ki < 2; ki++){
+				for (int kj = -1; kj < 2; kj++){
+					int ii = i + ki;
+					int jj = j + kj;
+					if (ii < 0) ii = 0;
+					if (ii >= im_height) ii = im_height - 1;
+					if (jj < 0) jj = 0;
+					if (jj >= im_width) jj = im_width - 1;
+					g_x += image_data[ii*im_width+jj]*sobel_x[(ki+1)*3+kj+1];
+					g_y += image_data[ii*im_width+jj]*sobel_y[(ki+1)*3+kj+1];
+				}
+>>>>>>> ddf6f935d341433276530a3fe816e38ed3ba4160
 			}
 			top = mid;
 			mid = bot;
