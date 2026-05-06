@@ -72,6 +72,7 @@ alt_u8 gyro_config[CONFIG_LENGHT] = {
 
 
 #define IM_SIZE (240 * 320)
+#define IM_SIZE_SMOL (120 * 160)
 #define THRESHOLD 75 // for accelerometer rotation to rotate frames in quad mode
 
 void display_fps(int duration); // declare prototype above so no "implicit declaration" warnings, not needed but i dont like warnings
@@ -119,7 +120,11 @@ int main()
     // camera stuff
 	alt_u8 cam_set = 18; // binary 000 10010 cam settings
 
-	alt_u8 image_buffer[IM_SIZE];
+	alt_u8 image_buffer[IM_SIZE*4];
+	int *normal_image = &image_buffer[0];
+	int *flipped_image = &image_buffer[IM_SIZE];
+	int *blurred_image = &image_buffer[IM_SIZE*2];
+	int *edging_image = &image_buffer[IM_SIZE*3];
 
 	int start_time, end_time, duration;
 
@@ -203,7 +208,7 @@ int main()
 		if (quad_mode) {
 			cam_set = 18; // default settings except downscaled & "settings changed" = true
 
-			alt_avalon_spi_command(SPI_0_BASE, 1, 1, &cam_set, IM_SIZE, image_buffer, 0);
+			alt_avalon_spi_command(SPI_0_BASE, 1, 1, &cam_set, IM_SIZE_SMOL, image_buffer, 0);
 
 			// ROTATE with Accelerometer Y Axis.
 			// Y-axis rotation control
@@ -260,6 +265,7 @@ int main()
 			}
 			else if (rot_top_left == 1) {
 			    // image 1
+
 			}
 			else if (rot_top_left == 2) {
 			    // image 2
@@ -297,9 +303,6 @@ int main()
 			else if (rot_bottom_left == 3) {
 			    // display image 3
 			}
-			else if (rot_bottom_left == 3) {
-			    // display image 3
-			}
 
 
 			// BOTTOM RIGHT
@@ -329,12 +332,18 @@ int main()
 			}
 			else if (top_left == 1) {
 			    // display image 1
+				flip_image(image_buffer, flipped_image, 1, IM_SIZE);
+				display_img(320, 240, 0, 0, flipped_image, 0);
 			}
 			else if (top_left == 2) {
 			    // display image 2
+				blur(image_buffer, blurred_image, 1, IM_SIZE);
+				display_img(320, 240, 0, 0, blurred_image, 0);
 			}
 			else if (top_left == 3) {
 			    // display image 3
+				edge_detector(image_buffer, edging_image, 1, IM_SIZE);
+				display_img(320, 240, 0, 0, edging_image, 0);
 			}
 		}
 
