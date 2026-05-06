@@ -10,7 +10,9 @@ obj/default/hello_world_small.o: hello_world_small.c \
  ../processor0_bsp//HAL/inc/sys/alt_errno.h \
  ../processor0_bsp//HAL/inc/os/alt_sem.h \
  ../processor0_bsp//HAL/inc/priv/alt_no_error.h \
- ../processor0_bsp//drivers/inc/altera_avalon_pio_regs.h
+ ../processor0_bsp//drivers/inc/altera_avalon_pio_regs.h \
+ ../processor0_bsp//HAL/inc/sys/alt_irq.h \
+ ../processor0_bsp//HAL/inc/nios2.h
 
 ../processor0_bsp//HAL/inc/sys/alt_stdio.h:
 
@@ -39,3 +41,7 @@ obj/default/hello_world_small.o: hello_world_small.c \
 ../processor0_bsp//HAL/inc/priv/alt_no_error.h:
 
 ../processor0_bsp//drivers/inc/altera_avalon_pio_regs.h:
+
+../processor0_bsp//HAL/inc/sys/alt_irq.h:
+
+../processor0_bsp//HAL/inc/nios2.h:
