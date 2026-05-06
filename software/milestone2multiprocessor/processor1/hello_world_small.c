@@ -4,10 +4,15 @@
 #include "io.h"
 #include <altera_avalon_spi.h>
 #include <altera_avalon_mutex.h>
+#include "altera_avalon_pio_regs.h"
+#include <stdlib.h>
+#include "sys/alt_irq.h"
+
 
 // Shared Memory Definitions
 //#define SHARED_MAILBOX_BASE 0x03FFF000
-#define SHARED_MAILBOX_BASE 0x03312D20
+//#define SHARED_MAILBOX_BASE 0x03312D20
+#define SHARED_MAILBOX_BASE 0x0298969F
 
 #define IM_SIZE (240 * 320)
 //#define IM_SIZE (10)
@@ -63,6 +68,27 @@ alt_u8 gyro_config[CONFIG_LENGHT] = {
     INT_ENABLE, 0x00,
     INT_MAP, 0x20,
     POWER_CONTROL, 0x08};
+
+
+//use later on
+void pio_isr_proc1(void* context) {
+    IOWR_ALTERA_AVALON_PIO_EDGE_CAP(IRQ_TO_PROC1_BASE, 0x1);
+    //modify flag
+    printf("$");
+}
+
+//SET IRQ CONTROLLER
+//alt_ic_isr_register(IRQ_TO_PROC1_IRQ_INTERRUPT_CONTROLLER_ID, IRQ_TO_PROC1_IRQ, pio_isr_proc1, NULL, NULL);
+//IOWR_ALTERA_AVALON_PIO_IRQ_MASK(IRQ_FROM_PROC1_BASE, 0x1); // Enable IRQ
+
+//TO RECIEVE
+//while (flag == 0){dowhatever};
+//flag = 0;
+
+//TO SEND
+//IOWR_ALTERA_AVALON_PIO_DATA(IRQ_FROM_PROC1_BASE, 1); // rise
+//wait();
+//IOWR_ALTERA_AVALON_PIO_DATA(IRQ_FROM_PROC1_BASE, 0); // Pulse low
 
 int main() {
     //printf("processor1\n");

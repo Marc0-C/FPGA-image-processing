@@ -67,7 +67,8 @@ module top_level (
 	assign multiplexed_miso = (GSENSOR_CS_N) ? GPIO[7] : GSENSOR_SDO; //multiplex based on chipselect
 
 	
-	
+	wire pio_0_to_1;
+	wire pio_1_to_0;
 	
    sdram_pll pll0 (
 		.inclk0(CLOCK_50),
@@ -115,7 +116,14 @@ module top_level (
         //.spi_0_external_SS_n    ({GPIO[10], GSENSOR_CS_N}
 		  
 		  // --- Counter ---
-		  .usec_counter_pio_export_export(current_usec)
+		  .usec_counter_pio_export_export(current_usec),
+		  
+		  // --- interporcessor IRQ --
+		  .irq_to_proc1_export   (pio_0_to_1),      
+		  .irq_from_proc1_export      (pio_1_to_0),     
+		  .irq_from_proc0_export      (pio_0_to_1),     
+		  .irq_to_proc0_export   (pio_1_to_0)  
+		  
     );
 ///////////////////////
   

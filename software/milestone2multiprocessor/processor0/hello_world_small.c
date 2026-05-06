@@ -5,15 +5,42 @@
 #include "io.h"
 #include "altera_avalon_mutex.h"
 #include "altera_avalon_pio_regs.h"
+#include <stdint.h>
+#include <stdlib.h>
+#include "sys/alt_irq.h"
+
 
 //#define SHARED_MAILBOX_BASE 0x03FFF000
-#define SHARED_MAILBOX_BASE 0x03312D20
+//#define SHARED_MAILBOX_BASE 0x03312D20
+#define SHARED_MAILBOX_BASE 0x0298969F
 
 
 #define IM_SIZE (240 * 320)
 //#define IM_SIZE (10)
 
 void display_fps(int duration);
+volatile int newframe = 0;
+
+//use later on
+void pio_isr_proc0(void* context) {
+    IOWR_ALTERA_AVALON_PIO_EDGE_CAP(IRQ_TO_PROC0_BASE, 0x1);
+    //modify flag
+    printf("$");
+}
+
+//SET IRQ CONTROLLER
+//alt_ic_isr_register(IRQ_TO_PROC0_IRQ_INTERRUPT_CONTROLLER_ID, IRQ_TO_PROC0_IRQ, pio_isr_proc0, NULL, NULL);
+//IOWR_ALTERA_AVALON_PIO_IRQ_MASK(IRQ_FROM_PROC0_BASE, 0x1); // Enable IRQ
+
+//TO RECIEVE
+//while (flag == 0){dowhatever};
+//flag = 0;
+
+//TO SEND
+//IOWR_ALTERA_AVALON_PIO_DATA(IRQ_FROM_PROC0_BASE, 1); // rise
+//wait();
+//IOWR_ALTERA_AVALON_PIO_DATA(IRQ_FROM_PROC0_BASE, 0); // Pulse low
+
 
 int main() {
     //printf("processor0\n");
@@ -37,6 +64,8 @@ int main() {
             }
         altera_avalon_mutex_unlock(mutex);
 
+        //send interrupt to p1 we have frame in buffer
+
         //for (volatile int i = 0; i<500000; i++){}
         //printf("just unlocked mutex \n");
 
@@ -57,6 +86,9 @@ int main() {
         //if (framenum%20 == 0){printf("sent frame %d to vga, firstpixelvalue %d, lastpixelvalue%d: \n", framenum, first_pixelvalue, last_pixelvalue);}
 
         end_time = IORD_ALTERA_AVALON_PIO_DATA(USEC_COUNTER_PIO_BASE);
+
+        //wait for interrupt from p1 (new frame in sdram)?
+
         duration = end_time - start_time;
         display_fps(duration);
         /*
