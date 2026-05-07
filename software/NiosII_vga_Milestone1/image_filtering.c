@@ -79,14 +79,14 @@ void edge_detector(alt_u8 image_data[], alt_u8 image_return[], int size){
 			if (jj == 0) jj++;
 			if (jj == im_width - 1) jj--;
 			if (i == 0){
-				mid = &image_data[j-1];
+				mid = &image_data[jj-1];
 				bot = mid;
 			}
 			top = mid;
 			mid = bot;
 
 			if (i != im_height-1) {
-				bot = &image_data[(i+1)*im_width+j-1];
+				bot = &image_data[(i+1)*im_width+jj-1];
 			}
 			if (j == 0){
 				g_x = *top[0]+2*(*mid[0])+*bot[0]-(*top[1]+2*(*mid[1])+*bot[1]);
