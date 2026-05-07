@@ -77,7 +77,7 @@ alt_u8 gyro_config[CONFIG_LENGHT] = {
 
 void display_fps(int duration); // declare prototype above so no "implicit declaration" warnings, not needed but i dont like warnings
 
-void display_img(int width, int height, int startx, int starty, alt_u8 buffer[IM_SIZE], int startAddress); // prototype to display images from buffer
+void display_img(int width, int height, int startx, int starty, alt_u8 buffer[IM_SIZE]); // prototype to display images from buffer
 
 // ISR function for KEY PRESSES
 void key_isr(void* context, alt_u32 id)
@@ -120,11 +120,11 @@ int main()
     // camera stuff
 	alt_u8 cam_set = 18; // binary 000 10010 cam settings
 
-	alt_u8 image_buffer[IM_SIZE*4];
-	int *normal_image = &image_buffer[0];
-	int *flipped_image = &image_buffer[IM_SIZE];
-	int *blurred_image = &image_buffer[IM_SIZE*2];
-	int *edging_image = &image_buffer[IM_SIZE*3];
+	alt_u8 image_buffer[IM_SIZE];
+	alt_u8 special_image[IM_SIZE];
+	int *flip_quad_image = &special_image+IM_SIZE_SMOL;
+	int *blur_quad_image = &special_image+IM_SIZE_SMOL*2;
+	int *edge_quad_image = &special_image+IM_SIZE_SMOL*3;
 
 	int start_time, end_time, duration;
 
@@ -132,10 +132,10 @@ int main()
 	int rotation = 0; // keeps track of acceleromter frame rotation for quad mode
 
 	// for rotated versions quad mode
-	int rot_top_left    = 0;
-	int rot_top_right   = 0;
-	int rot_bottom_left = 0;
-	int rot_bottom_right= 0;
+	int mode_top_left    = 0;
+	int mode_top_right   = 0;
+	int mode_bottom_left = 0;
+	int mode_bottom_right= 0;
 
 
 	// set them all 0 to init
@@ -181,10 +181,10 @@ int main()
 
 		int sw = IORD_ALTERA_AVALON_PIO_DATA(SW_BASE);
 
-		int top_left = (sw >> 0) & 0x3;  // SW[1:0]
-		int top_right = (sw >> 2) & 0x3;  // SW[3:2]
-		int bottom_left = (sw >> 4) & 0x3;  // SW[5:4]
-		int bottom_right = (sw >> 6) & 0x3;  // SW[7:6]
+		int sw_top_left = (sw >> 0) & 0x3;  // SW[1:0]
+		int sw_top_right = (sw >> 2) & 0x3;  // SW[3:2]
+		int sw_bottom_left = (sw >> 4) & 0x3;  // SW[5:4]
+		int sw_bottom_right = (sw >> 6) & 0x3;  // SW[7:6]
 
 
 		// debugging prints out the state of SW that correspond to the modes yep.
@@ -220,103 +220,135 @@ int main()
 			    rotation = (rotation + 3) % 4; // -1 mod 4
 			    printf("Rotated CCW\n");
 			}
-			else if (rot_top_left == 1) {
+
+			// change to be if any quadrant is mode x,
+			// then call function for corresponding mode
+			// otherwise if dont need that image anywhere dont run that function
+
+
+
+
+			if ((mode_top_left == 1 || mode_top_right == 1 || mode_bottom_left == 1 || mode_bottom_right == 1)) {
 			    // image 1
+				flip_image(image_buffer, flip_quad_image, 1, 1);
 			}
-			else if (rot_top_left == 2) {
+			if ((mode_top_left == 2 || mode_top_right == 2 || mode_bottom_left == 2 || mode_bottom_right == 2)) {
 			    // image 2
+				blur(image_buffer, blur_quad_image, 1);
+
 			}
-			else if (rot_top_left == 3) {
+			if ((mode_top_left == 3 || mode_top_right == 3 || mode_bottom_left == 3 || mode_bottom_right == 3)) {
 			    // image 3
+				edge_detector(image_buffer, edge_quad_image, 1);
 			}
 
 
-			// apply rotation mapping
+
+			// apply rotation mapping:
+
+			// mode = actual mode to be displayed on each quadrant, based on
+			// -- the raw sw data corresponding to each quadrant
+			// -- the rotation being applied to the quadrants
+
 			if (rotation == 0) {
-			    rot_top_left     = top_left;
-			    rot_top_right    = top_right;
-			    rot_bottom_left  = bottom_left;
-			    rot_bottom_right = bottom_right;
+			    mode_top_left     = sw_top_left;
+			    mode_top_right    = sw_top_right;
+			    mode_bottom_left  = sw_bottom_left;
+			    mode_bottom_right = sw_bottom_right;
 			}
 			else if (rotation == 1) {
-			    rot_top_left     = bottom_left;
-			    rot_top_right    = top_left;
-			    rot_bottom_left  = bottom_right;
-			    rot_bottom_right = top_right;
+			    mode_top_left     = sw_bottom_left;
+			    mode_top_right    = sw_top_left;
+			    mode_bottom_left  = sw_bottom_right;
+			    mode_bottom_right = sw_top_right;
 			}
 			else if (rotation == 2) {
-			    rot_top_left     = bottom_right;
-			    rot_top_right    = bottom_left;
-			    rot_bottom_left  = top_right;
-			    rot_bottom_right = top_left;
+			    mode_top_left     = sw_bottom_right;
+			    mode_top_right    = sw_bottom_left;
+			    mode_bottom_left  = sw_top_right;
+			    mode_bottom_right = sw_top_left;
 			}
 			else if (rotation == 3) {
-			    rot_top_left     = top_right;
-			    rot_top_right    = bottom_right;
-			    rot_bottom_left  = top_left;
-			    rot_bottom_right = bottom_left;
+			    mode_top_left     = sw_top_right;
+			    mode_top_right    = sw_bottom_right;
+			    mode_bottom_left  = sw_top_left;
+			    mode_bottom_right = sw_bottom_left;
 			}
 
 
+
+			// actually display the images in each quadrant
 
 			// TOP LEFT
-			if (rot_top_left == 0) {
-			    display_img(160, 120, 0, 0, image_buffer, 0);
+			if (mode_top_left == 0) {
+			    display_img(160, 120, 0, 0, image_buffer);
 			}
-			else if (rot_top_left == 1) {
+			else if (mode_top_left == 1) {
 			    // image 1
+				display_img(160, 120, 0, 0, flip_quad_image);
 
 			}
-			else if (rot_top_left == 2) {
+			else if (mode_top_left == 2) {
 			    // image 2
+				display_img(160, 120, 0, 0, blur_quad_image);
 			}
-			else if (rot_top_left == 3) {
+			else if (mode_top_left == 3) {
 			    // image 3
+				display_img(160, 120, 0, 0, edge_quad_image);
 			}
 
 
 			// TOP RIGHT
-			if (rot_top_right == 0) {
-			    display_img(160, 120, 160, 0, image_buffer, 0);
+			if (mode_top_right == 0) {
+			    display_img(160, 120, 160, 0, image_buffer);
 			}
-			else if (rot_top_right == 1) {
+			else if (mode_top_right == 1) {
 			    // display image 1
+				display_img(160, 120, 160, 0, flip_quad_image);
 			}
-			else if (rot_top_right == 2) {
+			else if (mode_top_right == 2) {
 			    // display image 2
+				display_img(160, 120, 160, 0, blur_quad_image);
 			}
-			else if (rot_top_right == 3) {
+			else if (mode_top_right == 3) {
 			    // display image 3
+				display_img(160, 120, 160, 0, edge_quad_image);
 			}
 
 
 			// BOTTOM LEFT
-			if (rot_bottom_left == 0) {
-			    display_img(160, 120, 0, 120, image_buffer, 0);
+			if (mode_bottom_left == 0) {
+			    display_img(160, 120, 0, 120, image_buffer);
 			}
-			else if (rot_bottom_left == 1) {
+			else if (mode_bottom_left == 1) {
 			    // display image 1
+				display_img(160, 120, 0, 120, flip_quad_image);
 			}
-			else if (rot_bottom_left == 2) {
+			else if (mode_bottom_left == 2) {
 			    // display image 2
+				display_img(160, 120, 0, 120, blur_quad_image);
 			}
-			else if (rot_bottom_left == 3) {
+			else if (mode_bottom_left == 3) {
 			    // display image 3
+				display_img(160, 120, 0, 120, edge_quad_image);
 			}
 
 
 			// BOTTOM RIGHT
-			if (rot_bottom_right == 0) {
-			    display_img(160, 120, 160, 120, image_buffer, 0);
+			if (mode_bottom_right == 0) {
+			    display_img(160, 120, 160, 120, image_buffer);
 			}
-			else if (rot_bottom_right == 1) {
+			else if (mode_bottom_right == 1) {
 			    // display image 1
+				display_img(160, 120, 160, 120, flip_quad_image);
 			}
-			else if (rot_bottom_right == 2) {
+			else if (mode_bottom_right == 2) {
 			    // display image 2
+				display_img(160, 120, 160, 120, blur_quad_image);
 			}
-			else if (rot_bottom_right == 3) {
+			else if (mode_bottom_right == 3) {
 			    // display image 3
+				display_img(160, 120, 160, 120, edge_quad_image);
 			}
 
 
@@ -325,25 +357,29 @@ int main()
 
 			alt_avalon_spi_command(SPI_0_BASE, 1, 1, &cam_set, IM_SIZE, image_buffer, 0);
 
-			if (top_left == 0) {
+			if (sw_top_left == 0) {
 				// display image 0
 				// image width, image height, startx, starty, buffer
-				display_img(320, 240, 0, 0, image_buffer, 0);
+				display_img(320, 240, 0, 0, image_buffer);
 			}
-			else if (top_left == 1) {
+			else if (sw_top_left == 1) {
 			    // display image 1
-				flip_image(image_buffer, flipped_image, 1, IM_SIZE);
-				display_img(320, 240, 0, 0, flipped_image, 0);
+
+				// modifications args: input buffer, output buffer, axis(0/1), size(0=big / 1=small)
+				flip_image(image_buffer, special_image, 1, 0);
+				display_img(320, 240, 0, 0, special_image);
 			}
-			else if (top_left == 2) {
+			else if (sw_top_left == 2) {
 			    // display image 2
-				blur(image_buffer, blurred_image, 1, IM_SIZE);
-				display_img(320, 240, 0, 0, blurred_image, 0);
+
+				// modifications args: input buffer, output buffer, 0=big / 1=small
+				blur(image_buffer, special_image, 0);
+				display_img(320, 240, 0, 0, special_image);
 			}
-			else if (top_left == 3) {
+			else if (sw_top_left == 3) {
 			    // display image 3
-				edge_detector(image_buffer, edging_image, 1, IM_SIZE);
-				display_img(320, 240, 0, 0, edging_image, 0);
+				edge_detector(image_buffer, special_image, 0);
+				display_img(320, 240, 0, 0, special_image);
 			}
 		}
 
@@ -359,8 +395,8 @@ int main()
     return 0;
 }
 
-void display_img(int width, int height, int startx, int starty, alt_u8 *buffer, int startAddress) {
-    alt_u8 *img = buffer + startAddress;
+void display_img(int width, int height, int startx, int starty, alt_u8 *buffer) {
+    alt_u8 *img = buffer;
 
     // only for debugging, weird black pixel check value of certain adresses
     //printf("TL: %d\n", buffer[0] >> 4);
