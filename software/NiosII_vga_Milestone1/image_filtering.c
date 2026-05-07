@@ -1,3 +1,5 @@
+#include "io.h"
+
 void flip_image(alt_u8 image_data[], alt_u8 image_return[], int axis, int size){
 
 	int im_width = 320;
@@ -26,21 +28,35 @@ void blur(alt_u8 image_data[], alt_u8 image_return[], int size){
 
 	im_width >>= size;
 	im_height >>= size;
+	int sum;
 
-	for (int i = 0; i < im_height; i++){
-		for (int j = 0; j < im_width; j++){
-			int sum = 0;
-			for (int ki = -1; ki < 2; ki++){
-				for (int kj = -1; kj < 2; kj++){
-					int ii = i + ki;
-					int jj = j + kj;
-					if (ii < 0) ii = 0;
-					if (ii >= im_height) ii = im_height - 1;
-					if (jj < 0) jj = 0;
-					if (jj >= im_width) jj = im_width - 1;
+	alt_u8 *top;
+	alt_u8 *mid;
+	alt_u8 *bot;
 
-					sum += image_data[ii*im_width+jj];
-				}
+	for (int j = 0; j < im_width; j++){
+		for (int i = 0; i < im_height; i++){
+
+			int jj = j;
+			if (jj == 0) jj++;
+			if (jj == im_width - 1) jj--;
+			if (i == 0){
+				mid = &image_data[jj-1];
+				bot = mid;
+			}
+			top = mid;
+			mid = bot;
+
+			if (i != im_height-1) {
+				bot = &image_data[(i+1)*im_width+jj-1];
+			}
+
+			if (j == 0){
+				sum = top[0]+top[0]+top[1]+mid[0]+mid[0]+mid[1]+bot[0]+bot[0]+bot[1];
+			} else if (j == im_width-1){
+				sum = top[1]+top[2]+top[2]+mid[1]+mid[2]+mid[2]+bot[1]+bot[2]+bot[2];
+			} else{
+				sum = top[0]+top[1]+top[2]+mid[0]+mid[1]+mid[2]+bot[0]+bot[1]+bot[2];
 			}
 			image_return[i*im_width+j] = sum / 9;
 		}
