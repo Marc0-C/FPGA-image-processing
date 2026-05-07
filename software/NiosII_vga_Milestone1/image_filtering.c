@@ -61,7 +61,9 @@ void edge_detector(alt_u8 image_data[], alt_u8 image_return[], int size){
 	int g_x;
 	int g_y;
 	int g;
-	int thresh = 100;
+	int thresh;
+	if (size == 0) thresh = 100;
+	else thresh = 200;
 	int white = 15<<4;
 
 	alt_u8 (*top)[3];
