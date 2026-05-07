@@ -1,5 +1,7 @@
 #include "io.h"
 
+
+
 void flip_image(alt_u8 image_data[], alt_u8 image_return[], int axis, int size){
 
 	int im_width = 320;
@@ -28,6 +30,7 @@ void blur(alt_u8 image_data[], alt_u8 image_return[], int size){
 
 	im_width >>= size;
 	im_height >>= size;
+
 	int sum;
 
 	alt_u8 *top;
@@ -57,6 +60,7 @@ void blur(alt_u8 image_data[], alt_u8 image_return[], int size){
 				sum = top[1]+top[2]+top[2]+mid[1]+mid[2]+mid[2]+bot[1]+bot[2]+bot[2];
 			} else{
 				sum = top[0]+top[1]+top[2]+mid[0]+mid[1]+mid[2]+bot[0]+bot[1]+bot[2];
+
 			}
 			image_return[i*im_width+j] = sum / 9;
 		}
