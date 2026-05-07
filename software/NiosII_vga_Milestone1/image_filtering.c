@@ -4,10 +4,10 @@ void flip_image(alt_u8 image_data[], alt_u8 image_return[], int axis, int size){
 
 	int im_width = 320;
 	int im_height = 240;
-	int im_size = im_width*im_height;
 
 	im_width >>= size;
 	im_height >>= size;
+	int im_size = im_width*im_height;
 
 
 	for (int i = 0; i < im_size; i += im_width){
@@ -50,39 +50,49 @@ void blur(alt_u8 image_data[], alt_u8 image_return[], int size){
 	return;
 }
 
-void edge_detector(char image_data[], char image_return[], int size){
+void edge_detector(alt_u8 image_data[], alt_u8 image_return[], int size){
 	int im_width = 320;
 	int im_height = 240;
 
 	im_width >>= size;
 	im_height >>= size;
 
-	int sobel_x[] = {1,0,-1,
-					 2,0,-2,
-					 1,0,-1};
-	int sobel_y[] = {1,2,1,
-					 0,0,0,
-					 -1,-2,-1};
 
 	int g_x;
 	int g_y;
 	int g;
+	int thresh;
+	if (size == 0) {
+		thresh = 100;
+	}else thresh = 200;
+	int white = 15<<4;
 
-	for (int i = 1; i < im_height-1; i++){
-		for (int j = 1; j < im_width-1; j++){
+	alt_u8 (*top)[3];
+	alt_u8 (*mid)[3];
+	alt_u8 (*bot)[3];
+
+	for (int j = 0; j < im_width; j++){
+		for (int i = 0; i < im_height; i++){
 			g_x = 0;
 			g_y = 0;
-			for (int ki = -1; ki < 2; ki++){
-				for (int kj = -1; kj < 2; kj++){
-					int ii = i + ki;
-					int jj = j + kj;
-					g_x += image_data[ii*im_width+jj]*sobel_x[(ki+1)*3+kj+1];
-					g_y += image_data[ii*im_width+jj]*sobel_y[(ki+1)*3+kj+1];
-				}
+
+			if (i == 0){
+				mid = &image_data[j-1];
+				bot = mid;
 			}
+			top = mid;
+			mid = bot;
+			if (i != im_height-1) {
+				bot = &image_data[(i+1)*im_width+j-1];
+			}
+
+			g_x = *top[0]+2*(*mid[0])+*bot[0]-(*top[2]+2*(*mid[2])+*bot[2]);
+			g_y = *top[0]+2*(*top[1])+*top[2]-(*bot[0]+2*(*bot[1])+*bot[2]);
+
+
 			g = abs(g_x) + abs(g_y);
-			if (g > 100){
-				image_return[i*im_width+j] = 15<<4;
+			if (g > thresh){
+				image_return[i*im_width+j] = white;
 			} else {
 				image_return[i*im_width+j] = 0;
 			}
