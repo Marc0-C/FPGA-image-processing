@@ -4,7 +4,7 @@
  * Machine generated for CPU 'nios2_gen2_1' in SOPC Builder design 'nios_system'
  * SOPC Builder design path: ../../../nios_system.sopcinfo
  *
- * Generated: Mon May 04 19:34:57 EST 2026
+ * Generated: Thu May 07 13:49:51 EST 2026
  */
 
 /*
@@ -142,7 +142,7 @@
  */
 
 #define ALT_MODULE_CLASS_Cam_Ready altera_avalon_pio
-#define CAM_READY_BASE 0x4001050
+#define CAM_READY_BASE 0x4001070
 #define CAM_READY_BIT_CLEARING_EDGE_REGISTER 0
 #define CAM_READY_BIT_MODIFYING_OUTPUT_REGISTER 0
 #define CAM_READY_CAPTURE 0
@@ -178,6 +178,60 @@
 
 
 /*
+ * KEY configuration
+ *
+ */
+
+#define ALT_MODULE_CLASS_KEY altera_avalon_pio
+#define KEY_BASE 0x4001060
+#define KEY_BIT_CLEARING_EDGE_REGISTER 0
+#define KEY_BIT_MODIFYING_OUTPUT_REGISTER 0
+#define KEY_CAPTURE 1
+#define KEY_DATA_WIDTH 2
+#define KEY_DO_TEST_BENCH_WIRING 0
+#define KEY_DRIVEN_SIM_VALUE 0
+#define KEY_EDGE_TYPE "RISING"
+#define KEY_FREQ 50000000
+#define KEY_HAS_IN 1
+#define KEY_HAS_OUT 0
+#define KEY_HAS_TRI 0
+#define KEY_IRQ 1
+#define KEY_IRQ_INTERRUPT_CONTROLLER_ID 0
+#define KEY_IRQ_TYPE "EDGE"
+#define KEY_NAME "/dev/KEY"
+#define KEY_RESET_VALUE 0
+#define KEY_SPAN 16
+#define KEY_TYPE "altera_avalon_pio"
+
+
+/*
+ * SW configuration
+ *
+ */
+
+#define ALT_MODULE_CLASS_SW altera_avalon_pio
+#define SW_BASE 0x4001050
+#define SW_BIT_CLEARING_EDGE_REGISTER 0
+#define SW_BIT_MODIFYING_OUTPUT_REGISTER 0
+#define SW_CAPTURE 1
+#define SW_DATA_WIDTH 10
+#define SW_DO_TEST_BENCH_WIRING 0
+#define SW_DRIVEN_SIM_VALUE 0
+#define SW_EDGE_TYPE "RISING"
+#define SW_FREQ 50000000
+#define SW_HAS_IN 1
+#define SW_HAS_OUT 0
+#define SW_HAS_TRI 0
+#define SW_IRQ 7
+#define SW_IRQ_INTERRUPT_CONTROLLER_ID 0
+#define SW_IRQ_TYPE "EDGE"
+#define SW_NAME "/dev/SW"
+#define SW_RESET_VALUE 0
+#define SW_SPAN 16
+#define SW_TYPE "altera_avalon_pio"
+
+
+/*
  * System configuration
  *
  */
@@ -193,19 +247,19 @@
 #define ALT_NUM_INTERNAL_INTERRUPT_CONTROLLERS 1
 #define ALT_NUM_INTERRUPT_CONTROLLERS 1
 #define ALT_STDERR "/dev/jtag_uart_1"
-#define ALT_STDERR_BASE 0x4001060
+#define ALT_STDERR_BASE 0x4001080
 #define ALT_STDERR_DEV jtag_uart_1
 #define ALT_STDERR_IS_JTAG_UART
 #define ALT_STDERR_PRESENT
 #define ALT_STDERR_TYPE "altera_avalon_jtag_uart"
 #define ALT_STDIN "/dev/jtag_uart_1"
-#define ALT_STDIN_BASE 0x4001060
+#define ALT_STDIN_BASE 0x4001080
 #define ALT_STDIN_DEV jtag_uart_1
 #define ALT_STDIN_IS_JTAG_UART
 #define ALT_STDIN_PRESENT
 #define ALT_STDIN_TYPE "altera_avalon_jtag_uart"
 #define ALT_STDOUT "/dev/jtag_uart_1"
-#define ALT_STDOUT_BASE 0x4001060
+#define ALT_STDOUT_BASE 0x4001080
 #define ALT_STDOUT_DEV jtag_uart_1
 #define ALT_STDOUT_IS_JTAG_UART
 #define ALT_STDOUT_PRESENT
@@ -298,7 +352,7 @@
  */
 
 #define ALT_MODULE_CLASS_jtag_uart_1 altera_avalon_jtag_uart
-#define JTAG_UART_1_BASE 0x4001060
+#define JTAG_UART_1_BASE 0x4001080
 #define JTAG_UART_1_IRQ 4
 #define JTAG_UART_1_IRQ_INTERRUPT_CONTROLLER_ID 0
 #define JTAG_UART_1_NAME "/dev/jtag_uart_1"

@@ -10,12 +10,12 @@
 
 
 // Shared Memory Definitions
-//#define SHARED_MAILBOX_BASE 0x03FFF000
-//#define SHARED_MAILBOX_BASE 0x03312D20
-#define SHARED_MAILBOX_BASE 0x0298969F
+#define SHARED_MAILBOX_BASE 0x029896A0 //actual mailbox starts at 0x02895460 but its reserved for flags
+// -1 KEY, -2 ROTATE, -3 SWITCH, -4,-5,-6: CONTROL key, rot and switch
+#define THRESHOLD 75 // for accelerometer rotation to rotate frames in quad mode
 
 #define IM_SIZE (240 * 320)
-//#define IM_SIZE (10)
+#define IM_SIZEsmll (120 * 160)
 
 // Gyro write Registers
 #define BW_RATE 0x2c
@@ -69,6 +69,13 @@ alt_u8 gyro_config[CONFIG_LENGHT] = {
     INT_MAP, 0x20,
     POWER_CONTROL, 0x08};
 
+volatile int quad_mode = 0; // 0 = single, 1 = quad. volatile because changes outside of main loop
+volatile int lastEdge = 0;
+volatile int keypressed = 0;
+volatile int switchmoved = 0;
+int rotation = 0;
+int switchvalue = 0;
+
 
 //use later on
 void pio_isr_proc1(void* context) {
@@ -77,65 +84,107 @@ void pio_isr_proc1(void* context) {
     printf("$");
 }
 
-//SET IRQ CONTROLLER
-//alt_ic_isr_register(IRQ_TO_PROC1_IRQ_INTERRUPT_CONTROLLER_ID, IRQ_TO_PROC1_IRQ, pio_isr_proc1, NULL, NULL);
-//IOWR_ALTERA_AVALON_PIO_IRQ_MASK(IRQ_FROM_PROC1_BASE, 0x1); // Enable IRQ
+volatile int quadmode = 0;
 
-//TO RECIEVE
-//while (flag == 0){dowhatever};
-//flag = 0;
+// ISR function for KEY PRESSES
+void key_isr(void* context)
+{
+	// Clear edge capture register to acknowledge interrupt
+    IOWR_ALTERA_AVALON_PIO_EDGE_CAP(KEY_BASE, 0);
+    //set wire irq to 0
+    if (quadmode == 0){quadmode = 1;
+    }else{quadmode = 0;}
+    keypressed = 1;
+}
 
-//TO SEND
-//IOWR_ALTERA_AVALON_PIO_DATA(IRQ_FROM_PROC1_BASE, 1); // rise
-//wait();
-//IOWR_ALTERA_AVALON_PIO_DATA(IRQ_FROM_PROC1_BASE, 0); // Pulse low
+void sw_isr(void* context)
+{
+	// Clear edge capture register to acknowledge interrupt
+	IOWR_ALTERA_AVALON_PIO_EDGE_CAP(SW_BASE, 0);
+	switchmoved = 1; //tell rest of program interrupt has been called
+
+
+}
 
 int main() {
-    //printf("processor1\n");
-
-    // mutex
     alt_mutex_dev* mutex = altera_avalon_mutex_open(MUTEX_0_NAME);
+    IOWR_ALTERA_AVALON_PIO_DATA(SHARED_MAILBOX_BASE-1, 0);
+    IOWR_ALTERA_AVALON_PIO_DATA(SHARED_MAILBOX_BASE-2, 0);
+    IOWR_ALTERA_AVALON_PIO_DATA(SHARED_MAILBOX_BASE-3, 0);
+    IOWR_ALTERA_AVALON_PIO_DATA(SHARED_MAILBOX_BASE-4, 0); //initialise controls to 0
+    IOWR_ALTERA_AVALON_PIO_DATA(SHARED_MAILBOX_BASE-5, 0);
+    IOWR_ALTERA_AVALON_PIO_DATA(SHARED_MAILBOX_BASE-6, 0);
 
     // gyro
-    /*
     alt_u8 gyro_data_out;
-    for (int i = 0; i < 6; i += 2) {
-        alt_avalon_spi_command(SPI_0_BASE, 0, 2, gyro_config + i, 0, &gyro_data_out, 0);
-    }*/
-
-    alt_u8 readX = READ_X_AXIS;
+    for (int i = 0; i < CONFIG_LENGHT; i += 2) {alt_avalon_spi_command(SPI_0_BASE, 0, 2, gyro_config + i, 0, &gyro_data_out, 0);}
     alt_u8 readY = READ_Y_AXIS;
-    alt_u8 readZ = READ_Z_AXIS;
-    alt_16 xData;
     alt_16 yData;
-    alt_16 zData;
+
 
     alt_u8 cam_set = 0;
-
     // buffer to hold SPI data before moving to SDRAM
     static uint8_t image_buffer[IM_SIZE];
     int framenum = 0;
+
+    // clear edge capture register
+    IOWR_ALTERA_AVALON_PIO_EDGE_CAP(KEY_BASE, 0);
+    IOWR_ALTERA_AVALON_PIO_EDGE_CAP(SW_BASE, 0);
+    // enable interrupt for key 0 (bitmask depends on your setup)
+    IOWR_ALTERA_AVALON_PIO_IRQ_MASK(KEY_BASE, 0x1);
+    IOWR_ALTERA_AVALON_PIO_IRQ_MASK(SW_BASE, 0x3FF);
+    // set wire to 0
+    IOWR_ALTERA_AVALON_PIO_DATA(IRQ_FROM_PROC1_BASE, 0);
+    //set shared sdram flag to 0
+
+    //id interrupt controller, irq number, name of isr function, context, flag
+    alt_ic_isr_register(KEY_IRQ_INTERRUPT_CONTROLLER_ID,KEY_IRQ,key_isr,NULL,0x0);
+    alt_ic_isr_register(SW_IRQ_INTERRUPT_CONTROLLER_ID,SW_IRQ,sw_isr,NULL,0x0);
+
     while (1) {
-        // 1. Read Gyro (Processor 1 owns SPI)
-        //alt_avalon_spi_command(SPI_0_BASE, 0, 1, &readX, 2, &xData, 0);
-        //alt_avalon_spi_command(SPI_0_BASE, 0, 1, &readY, 2, &yData, 0);
-        //alt_avalon_spi_command(SPI_0_BASE, 0, 1, &readZ, 2, &zData, 0);
-        //printf("X axis: %4d\t Y axis: %4d\t Z axis %4d\n", xData, yData, zData);
+        // Read Gyro (Processor 1 owns SPI)
+		//alt_avalon_spi_command(SPI_0_BASE, 0, 1, &readX, 2, (alt_u8*)&xData, 0); // have to cast to u8 because otherwise warning even though acceleromter sends 16 bits
+		alt_avalon_spi_command(SPI_0_BASE, 0, 1, &readY, 2, (alt_u8*)&yData, 0);
+		//alt_avalon_spi_command(SPI_0_BASE, 0, 1, &readZ, 2, (alt_u8*)&zData, 0);
+		//printf("X axis: %4d\t Y axis: %4d\t Z axis %4d\n", xData, yData, zData);
+		//printf("Y axis: %4d\n",yData);
 
 
-        // 2. Capture Frame from Camera into local buffer
-        //spibase, CS, byte length, setting, n of bytes returned, where to put, flags
-        // use &imge_buffer instead?
-        alt_avalon_spi_command(SPI_0_BASE, 1, 1, &cam_set, IM_SIZE, image_buffer, 0);
 
-        // ARIFICIAL DATA TO MAKE SURE IT WORKS
-        /*
-        for (int i = 0; i< IM_SIZE; i++){
-        	if (i<(IM_SIZE/2)){
-        		image_buffer[i] = 16;
-        	}else{image_buffer[i] = 18;}
-        }
-		*/
+
+    	if (quadmode == 1){// if quad mode then accelerometer can send interrupts
+    		if (yData > 75) {
+    			rotation = (rotation + 1) % 4;
+    			IOWR_8DIRECT(SHARED_MAILBOX_BASE, - 2 , rotation); //set rotation in sdram
+    			IOWR_8DIRECT(SHARED_MAILBOX_BASE, - 5 , 1); //set rotation contol to 1
+    			//send interrupt to proc0
+        	    IOWR_ALTERA_AVALON_PIO_DATA(IRQ_FROM_PROC1_BASE , 0x1);
+        	    printf("sent rotation interrupt \n");
+        	    IOWR_ALTERA_AVALON_PIO_DATA(IRQ_FROM_PROC1_BASE, 0);
+    		}else if (yData < -75) {
+    			rotation = (rotation + 3) % 4; // -1 mod 4
+    			IOWR_8DIRECT(SHARED_MAILBOX_BASE, - 2 , rotation);
+    			IOWR_8DIRECT(SHARED_MAILBOX_BASE, - 5 , 1); //set rotation contol to 1
+    			//send interrupt to proc0
+        	    IOWR_ALTERA_AVALON_PIO_DATA(IRQ_FROM_PROC1_BASE , 0x1);
+        	    printf("sent rotation interrupt \n");
+        	    IOWR_ALTERA_AVALON_PIO_DATA(IRQ_FROM_PROC1_BASE, 0);
+    		}
+    	    cam_set = 18; // default settings except downscaled & "settings changed" = true
+    	    alt_avalon_spi_command(SPI_0_BASE, 1, 1, &cam_set, IM_SIZEsmll, image_buffer, 0);
+    	}else{
+    		cam_set = 16;
+    		alt_avalon_spi_command(SPI_0_BASE, 1, 1, &cam_set, IM_SIZE, image_buffer, 0);
+    	}
+    	if(switchmoved == 1){
+    		switchvalue = IORD_ALTERA_AVALON_PIO_DATA(SW_BASE);
+			IOWR_8DIRECT(SHARED_MAILBOX_BASE, - 3 , switchvalue); //set rotation in sdram
+			IOWR_8DIRECT(SHARED_MAILBOX_BASE, - 6 , 1); //set rotation contol to 1
+    	    IOWR_ALTERA_AVALON_PIO_DATA(IRQ_FROM_PROC1_BASE , 0x1);
+    	    printf("sent SWITCH interrupt \n");
+    	    IOWR_ALTERA_AVALON_PIO_DATA(IRQ_FROM_PROC1_BASE, 0);
+    		switchmoved = 0;
+    	}
 
         // 3. Critical Section: Copy to Shared Mailbox
         altera_avalon_mutex_lock(mutex, 1);
@@ -152,6 +201,24 @@ int main() {
         //printf("just unlocked mutex \n");
         //for (volatile int i = 0; i<500000; i++){}
         //printf("sent frame %d to shared memory in sdram first pixel value: %d \n", framenum, image_buffer[0]);
+
+    	if (keypressed == 1){
+    		altera_avalon_mutex_lock(mutex, 1);
+    		//IOWR_ALTERA_AVALON_PIO_DATA(SHARED_MAILBOX_BASE - 1 , quadmode);//write quadmode to sdram
+    		IOWR_8DIRECT(SHARED_MAILBOX_BASE, - 1 , quadmode);
+       	    altera_avalon_mutex_unlock(mutex);
+
+       	    //IOWR_ALTERA_AVALON_PIO_DATA(SHARED_MAILBOX_BASE - 4, 1);// set control to 1 to show interrupt is cause by key
+       	    IOWR_8DIRECT(SHARED_MAILBOX_BASE, - 4 , 1);
+       	    //send interrupt to proc 0
+    	    IOWR_ALTERA_AVALON_PIO_DATA(IRQ_FROM_PROC1_BASE , 0x1);
+    	    //edge rise
+    	    printf("sent key interrupt %d \n", quadmode);
+    	    IOWR_ALTERA_AVALON_PIO_DATA(IRQ_FROM_PROC1_BASE, 0);
+
+    	    keypressed = 0;
+
+    	}
 
     }
     return 0;

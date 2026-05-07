@@ -2,8 +2,8 @@
 <sch:Settings xmlns:sch="http://www.altera.com/embeddedsw/bsp/schema">
         <BspType>hal</BspType>
         <BspVersion>default</BspVersion>
-        <BspGeneratedTimeStamp>May 4, 2026 7:54:27 PM</BspGeneratedTimeStamp>
-        <BspGeneratedUnixTimeStamp>1777888467203</BspGeneratedUnixTimeStamp>
+        <BspGeneratedTimeStamp>07-May-2026 13:50:37</BspGeneratedTimeStamp>
+        <BspGeneratedUnixTimeStamp>1778125837108</BspGeneratedUnixTimeStamp>
         <BspGeneratedLocation>C:\Users\julia\practicalsECE3073\PROJECT\Timothycocks-ECE3073-Project2026-GroupA06\software\milestone2multiprocessor\processor1_bsp</BspGeneratedLocation>
         <BspSettingsFile>settings.bsp</BspSettingsFile>
         <SopcDesignFile>..\..\..\nios_system.sopcinfo</SopcDesignFile>
@@ -918,9 +918,9 @@
                 <regionName>new_sdram_controller_0</regionName>
                 <memoryName>new_sdram_controller_0</memoryName>
                 <offset>33554464</offset>
-                <size>10000000</size>
+                <size>9000000</size>
                 <baseAddress>0x2000020</baseAddress>
-                <addressRange>0x02000020 - 0x0298969F</addressRange>
+                <addressRange>0x02000020 - 0x0289545F</addressRange>
         </LinkerRegion>
         <MemoryMap>
                 <slaveDescriptor>new_sdram_controller_0</slaveDescriptor>
@@ -953,14 +953,26 @@
                 <attributes/>
         </MemoryMap>
         <MemoryMap>
-                <slaveDescriptor>Cam_Ready</slaveDescriptor>
+                <slaveDescriptor>SW</slaveDescriptor>
                 <addressRange>0x04001050 - 0x0400105F</addressRange>
                 <addressSpan>16</addressSpan>
                 <attributes/>
         </MemoryMap>
         <MemoryMap>
+                <slaveDescriptor>KEY</slaveDescriptor>
+                <addressRange>0x04001060 - 0x0400106F</addressRange>
+                <addressSpan>16</addressSpan>
+                <attributes/>
+        </MemoryMap>
+        <MemoryMap>
+                <slaveDescriptor>Cam_Ready</slaveDescriptor>
+                <addressRange>0x04001070 - 0x0400107F</addressRange>
+                <addressSpan>16</addressSpan>
+                <attributes/>
+        </MemoryMap>
+        <MemoryMap>
                 <slaveDescriptor>jtag_uart_1</slaveDescriptor>
-                <addressRange>0x04001060 - 0x04001067</addressRange>
+                <addressRange>0x04001080 - 0x04001087</addressRange>
                 <addressSpan>8</addressSpan>
                 <attributes>printable</attributes>
         </MemoryMap>
