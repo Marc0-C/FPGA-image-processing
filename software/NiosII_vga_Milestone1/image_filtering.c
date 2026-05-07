@@ -4,10 +4,10 @@ void flip_image(alt_u8 image_data[], alt_u8 image_return[], int axis, int size){
 
 	int im_width = 320;
 	int im_height = 240;
+	int im_size = im_width*im_height;
 
 	im_width >>= size;
 	im_height >>= size;
-	int im_size = im_width*im_height;
 
 
 	for (int i = 0; i < im_size; i += im_width){
@@ -61,10 +61,7 @@ void edge_detector(alt_u8 image_data[], alt_u8 image_return[], int size){
 	int g_x;
 	int g_y;
 	int g;
-	int thresh;
-	if (size == 0) {
-		thresh = 100;
-	}else thresh = 200;
+	int thresh = 100;
 	int white = 15<<4;
 
 	alt_u8 (*top)[3];
@@ -76,19 +73,29 @@ void edge_detector(alt_u8 image_data[], alt_u8 image_return[], int size){
 			g_x = 0;
 			g_y = 0;
 
+			int jj = j;
+			if (jj == 0) jj++;
+			if (jj == im_width - 1) jj--;
 			if (i == 0){
 				mid = &image_data[j-1];
 				bot = mid;
 			}
 			top = mid;
 			mid = bot;
+
 			if (i != im_height-1) {
 				bot = &image_data[(i+1)*im_width+j-1];
 			}
-
-			g_x = *top[0]+2*(*mid[0])+*bot[0]-(*top[2]+2*(*mid[2])+*bot[2]);
-			g_y = *top[0]+2*(*top[1])+*top[2]-(*bot[0]+2*(*bot[1])+*bot[2]);
-
+			if (j == 0){
+				g_x = *top[0]+2*(*mid[0])+*bot[0]-(*top[1]+2*(*mid[1])+*bot[1]);
+				g_y = *top[0]+2*(*top[0])+*top[1]-(*bot[0]+2*(*bot[0])+*bot[1]);
+			} else if (j == im_width-1){
+				g_x = *top[1]+2*(*mid[1])+*bot[1]-(*top[2]+2*(*mid[2])+*bot[2]);
+				g_y = *top[1]+2*(*top[2])+*top[2]-(*bot[1]+2*(*bot[2])+*bot[2]);
+			} else{
+				g_x = *top[0]+2*(*mid[0])+*bot[0]-(*top[2]+2*(*mid[2])+*bot[2]);
+				g_y = *top[0]+2*(*top[1])+*top[2]-(*bot[0]+2*(*bot[1])+*bot[2]);
+			}
 
 			g = abs(g_x) + abs(g_y);
 			if (g > thresh){
