@@ -98,5 +98,31 @@ void edge_detector(alt_u8 image_data[], alt_u8 image_return[], int size){
 			}
 		}
 	}
+
+	for (int i = 0; i < im_height; i += im_height-1){
+			for (int j = 0; j < im_width; j += im_width-1){
+				g_x = 0;
+				g_y = 0;
+				for (int ki = -1; ki < 2; ki++){
+					for (int kj = -1; kj < 2; kj++){
+						int ii = i + ki;
+						int jj = j + kj;
+						if (ii < 0) ii = 0;
+						if (ii >= im_height) ii = im_height - 1;
+						if (jj < 0) jj = 0;
+						if (jj >= im_width) jj = im_width - 1;
+						g_x += image_data[ii*im_width+jj]*sobel_x[(ki+1)*3+kj+1];
+						g_y += image_data[ii*im_width+jj]*sobel_y[(ki+1)*3+kj+1];
+					}
+				}
+				g = abs(g_x) + abs(g_y);
+				if (g > 100){
+					image_return[i*im_width+j] = 15<<4;
+				} else {
+					image_return[i*im_width+j] = 0;
+				}
+			}
+		}
+
 	return;
 }
