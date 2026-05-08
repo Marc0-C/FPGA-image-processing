@@ -155,16 +155,20 @@ int main() {
     	if (quadmode == 1){// if quad mode then accelerometer can send interrupts
     		if (yData > 75) {
     			rotation = (rotation + 1) % 4;
+    			altera_avalon_mutex_lock(mutex, 1);
     			IOWR_8DIRECT(SHARED_MAILBOX_BASE, - 2 , rotation); //set rotation in sdram
     			IOWR_8DIRECT(SHARED_MAILBOX_BASE, - 5 , 1); //set rotation contol to 1
+    			altera_avalon_mutex_unlock(mutex);
     			//send interrupt to proc0
         	    IOWR_ALTERA_AVALON_PIO_DATA(IRQ_FROM_PROC1_BASE , 0x1);
         	    printf("sent rotation interrupt \n");
         	    IOWR_ALTERA_AVALON_PIO_DATA(IRQ_FROM_PROC1_BASE, 0);
     		}else if (yData < -75) {
     			rotation = (rotation + 3) % 4; // -1 mod 4
+    			altera_avalon_mutex_lock(mutex, 1);
     			IOWR_8DIRECT(SHARED_MAILBOX_BASE, - 2 , rotation);
     			IOWR_8DIRECT(SHARED_MAILBOX_BASE, - 5 , 1); //set rotation contol to 1
+    			altera_avalon_mutex_unlock(mutex);
     			//send interrupt to proc0
         	    IOWR_ALTERA_AVALON_PIO_DATA(IRQ_FROM_PROC1_BASE , 0x1);
         	    printf("sent rotation interrupt \n");
@@ -178,8 +182,10 @@ int main() {
     	}
     	if(switchmoved == 1){
     		switchvalue = IORD_ALTERA_AVALON_PIO_DATA(SW_BASE);
+    		altera_avalon_mutex_lock(mutex, 1)
 			IOWR_8DIRECT(SHARED_MAILBOX_BASE, - 3 , switchvalue); //set rotation in sdram
 			IOWR_8DIRECT(SHARED_MAILBOX_BASE, - 6 , 1); //set rotation contol to 1
+			altera_avalon_mutex_unlock(mutex);
     	    IOWR_ALTERA_AVALON_PIO_DATA(IRQ_FROM_PROC1_BASE , 0x1);
     	    printf("sent SWITCH interrupt \n");
     	    IOWR_ALTERA_AVALON_PIO_DATA(IRQ_FROM_PROC1_BASE, 0);
@@ -187,7 +193,7 @@ int main() {
     	}
 
         // 3. Critical Section: Copy to Shared Mailbox
-        altera_avalon_mutex_lock(mutex, 1);
+        //altera_avalon_mutex_lock(mutex, 1);
         //printf("just locked mutex \n");
         //if (altera_avalon_mutex_is_mine(mutex) || altera_avalon_mutex_lock(mutex, 1) == 0) {
         for (int i = 0; i < IM_SIZE; i++) {
@@ -197,7 +203,7 @@ int main() {
             // each image_buffer[i] is a byte, each 320 bytes is a row
         }
         framenum += 1;
-        altera_avalon_mutex_unlock(mutex);
+        //altera_avalon_mutex_unlock(mutex);
         //printf("just unlocked mutex \n");
         //for (volatile int i = 0; i<500000; i++){}
         //printf("sent frame %d to shared memory in sdram first pixel value: %d \n", framenum, image_buffer[0]);
@@ -206,10 +212,11 @@ int main() {
     		altera_avalon_mutex_lock(mutex, 1);
     		//IOWR_ALTERA_AVALON_PIO_DATA(SHARED_MAILBOX_BASE - 1 , quadmode);//write quadmode to sdram
     		IOWR_8DIRECT(SHARED_MAILBOX_BASE, - 1 , quadmode);
-       	    altera_avalon_mutex_unlock(mutex);
+
 
        	    //IOWR_ALTERA_AVALON_PIO_DATA(SHARED_MAILBOX_BASE - 4, 1);// set control to 1 to show interrupt is cause by key
        	    IOWR_8DIRECT(SHARED_MAILBOX_BASE, - 4 , 1);
+       	    altera_avalon_mutex_unlock(mutex);
        	    //send interrupt to proc 0
     	    IOWR_ALTERA_AVALON_PIO_DATA(IRQ_FROM_PROC1_BASE , 0x1);
     	    //edge rise
