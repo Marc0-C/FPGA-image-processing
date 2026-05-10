@@ -177,7 +177,7 @@ int main()
 
 		alt_avalon_spi_command(SPI_0_BASE, 0, 1, &readZ, 2, (alt_u8*)&zData, 0);
 
-		printf("X axis: %4d\t Y axis: %4d\t Z axis %4d\n", xData, yData, zData);
+		//printf("X axis: %4d\t Y axis: %4d\t Z axis %4d\n", xData, yData, zData);
 
 		int sw = IORD_ALTERA_AVALON_PIO_DATA(SW_BASE);
 
