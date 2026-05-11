@@ -5,24 +5,24 @@ void flip_image(alt_u8 image_data[], alt_u8 image_return[], int axis, int size){
 	int im_width = 320;
 	int im_height = 240;
 
-	im_width >>= size;
+	im_width >>= size+1;
 	im_height >>= size;
 	int im_size = im_width*im_height;
 
-
-	for (int i = 0; i < im_size; i += im_width){
-		for (int j = 0; j < im_width; j += 1){
-			if (axis == 0) {
-				image_return[j + i] = image_data[i+im_width-1-j];
-			} else {
-				image_return[j + i] = image_data[j+im_size-im_width-i];
-			}
+	alt_u8 temp;
+	int id;
+	for (int i = 0; i < im_height; i++){
+		for (int j = 0; j < im_width; j++){
+			id = i*im_width+j;
+			temp = image_data[id];
+			image_return[im_size-1-id] = (temp << 4) + (temp >> 4);
 		}
 	}
 	return;
 }
 
 void blur(alt_u8 image_data[], alt_u8 image_return[], int size){
+
 	int im_width = 320;
 	int im_height = 240;
 
@@ -63,6 +63,8 @@ void blur(alt_u8 image_data[], alt_u8 image_return[], int size){
 			image_return[i*im_width+j] = sum / 9;
 		}
 	}
+
+
 	return;
 }
 

@@ -15,7 +15,6 @@
 #include "sys/alt_irq.h"
 
 volatile int quad_mode = 0; // 0 = single, 1 = quad. volatile because changes outside of main loop
-volatile int lastEdge = 0;
 
 
 // Gyro write Registers
@@ -82,15 +81,12 @@ void display_img(int width, int height, int startx, int starty, alt_u8 buffer[IM
 // ISR function for KEY PRESSES
 void key_isr(void* context, alt_u32 id)
 {
-    volatile int* edge_capture_ptr = (volatile int*) context;
-    int edge = *edge_capture_ptr;
 
     // clear interrupt FIRST
     IOWR_ALTERA_AVALON_PIO_EDGE_CAP(KEY_BASE, 0);
 
-    if (edge & 0x1) {
-        quad_mode = !quad_mode;
-    }
+    quad_mode = !quad_mode;
+
     printf("Interrupt KEY Pressed\n");
 }
 
@@ -410,7 +406,7 @@ void display_img(int width, int height, int startx, int starty, alt_u8 *buffer) 
             int screen_x = startx + 2*j;
             int screen_y = starty + i;
 
-            pix = img[i * width/2 + j - 1];
+            pix = img[i * width/2 + j-1];
 
             IOWR(PIX_BUFF_ADDR_BASE, 0, (screen_y * 320) + screen_x);
             IOWR(PIX_DATA_BASE, 0, pix >> 4); // bit shift by 4 coz 8 bit value only have 4 bits colour
