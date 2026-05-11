@@ -4,10 +4,10 @@ void flip_image(alt_u8 image_data[], alt_u8 image_return[], int axis, int size){
 
 	int im_width = 320;
 	int im_height = 240;
-	int im_size = im_width*im_height;
 
 	im_width >>= size;
 	im_height >>= size;
+	int im_size = im_width*im_height;
 
 
 	for (int i = 0; i < im_size; i += im_width){
