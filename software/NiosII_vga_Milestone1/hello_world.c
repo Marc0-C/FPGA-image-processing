@@ -118,13 +118,13 @@ int main()
     alt_u8 readZ = READ_Z_AXIS;
 
     // camera stuff
-	alt_u8 cam_set = 18; // binary 000 10010 cam settings
+	alt_u8 cam_set = 22; // binary 0001 0110 cam settings
 
-	alt_u8 image_buffer[IM_SIZE];
-	alt_u8 special_image[IM_SIZE];
-	int *flip_quad_image = &special_image+IM_SIZE_SMOL;
-	int *blur_quad_image = &special_image+IM_SIZE_SMOL*2;
-	int *edge_quad_image = &special_image+IM_SIZE_SMOL*3;
+	alt_u8 image_buffer[IM_SIZE/2];
+	alt_u8 special_image[IM_SIZE/2];
+	int *flip_quad_image = &special_image+IM_SIZE_SMOL/2;
+	int *blur_quad_image = &special_image+IM_SIZE_SMOL;
+	int *edge_quad_image = &special_image+IM_SIZE_SMOL*3/2;
 
 	int start_time, end_time, duration;
 
@@ -206,9 +206,9 @@ int main()
 		}*/
 
 		if (quad_mode) {
-			cam_set = 18; // default settings except downscaled & "settings changed" = true
+			cam_set = 22; // default settings except downscaled & "settings changed" = true
 
-			alt_avalon_spi_command(SPI_0_BASE, 1, 1, &cam_set, IM_SIZE_SMOL, image_buffer, 0);
+			alt_avalon_spi_command(SPI_0_BASE, 1, 1, &cam_set, IM_SIZE_SMOL/2, image_buffer, 0);
 
 			// ROTATE with Accelerometer Y Axis.
 			// Y-axis rotation control
@@ -353,9 +353,9 @@ int main()
 
 
 		} else { // SINGLE MODE
-			cam_set = 16; // default settings except "settings changed" = true
+			cam_set = 20; // default settings except "settings changed" = true
 
-			alt_avalon_spi_command(SPI_0_BASE, 1, 1, &cam_set, IM_SIZE, image_buffer, 0);
+			alt_avalon_spi_command(SPI_0_BASE, 1, 1, &cam_set, IM_SIZE/2, image_buffer, 0);
 
 			if (sw_top_left == 0) {
 				// display image 0
@@ -404,13 +404,19 @@ void display_img(int width, int height, int startx, int starty, alt_u8 *buffer) 
     //printf("BL: %d\n", buffer[(height - 1) * width] >> 4);
     //printf("BR: %d\n", buffer[width * height - 1] >> 4);
 
+    alt_u8 pix;
     for (int i = 0; i < height; i++) {
-        for (int j = 0; j < width; j++) {
-            int screen_x = startx + j;
+        for (int j = 0; j < width/2; j++) {
+            int screen_x = startx + 2*j;
             int screen_y = starty + i;
 
+            pix = img[i * width/2 + j - 1];
+
             IOWR(PIX_BUFF_ADDR_BASE, 0, (screen_y * 320) + screen_x);
-            IOWR(PIX_DATA_BASE, 0, img[i * width + j - 1] >> 4); // bit shift by 4 coz 8 bit value only have 4 bits colour
+            IOWR(PIX_DATA_BASE, 0, pix >> 4); // bit shift by 4 coz 8 bit value only have 4 bits colour
+
+            IOWR(PIX_BUFF_ADDR_BASE, 0, (screen_y * 320) + screen_x+1);
+            IOWR(PIX_DATA_BASE, 0, pix); // bit shift by 4 coz 8 bit value only have 4 bits colour
 
 
         }
