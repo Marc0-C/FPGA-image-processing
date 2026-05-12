@@ -142,11 +142,6 @@
          value = "14";
          type = "int";
       }
-      datum sopceditor_expanded
-      {
-         value = "1";
-         type = "boolean";
-      }
    }
    element SW.s1
    {
@@ -629,8 +624,8 @@
   <parameter name="captureEdge" value="true" />
   <parameter name="clockRate" value="50000000" />
   <parameter name="direction" value="Input" />
-  <parameter name="edgeType" value="RISING" />
-  <parameter name="generateIRQ" value="true" />
+  <parameter name="edgeType" value="ANY" />
+  <parameter name="generateIRQ" value="false" />
   <parameter name="irqType" value="EDGE" />
   <parameter name="resetValue" value="0" />
   <parameter name="simDoTestBenchWiring" value="false" />
@@ -1023,7 +1018,7 @@
   <parameter name="instruction_master_high_performance_paddr_size" value="0" />
   <parameter name="instruction_master_paddr_base" value="0" />
   <parameter name="instruction_master_paddr_size" value="0" />
-  <parameter name="internalIrqMaskSystemInfo" value="45" />
+  <parameter name="internalIrqMaskSystemInfo" value="41" />
   <parameter name="io_regionbase" value="0" />
   <parameter name="io_regionsize" value="0" />
   <parameter name="master_addr_map" value="false" />
@@ -1205,7 +1200,7 @@
   <parameter name="instruction_master_high_performance_paddr_size" value="0" />
   <parameter name="instruction_master_paddr_base" value="0" />
   <parameter name="instruction_master_paddr_size" value="0" />
-  <parameter name="internalIrqMaskSystemInfo" value="211" />
+  <parameter name="internalIrqMaskSystemInfo" value="83" />
   <parameter name="io_regionbase" value="0" />
   <parameter name="io_regionsize" value="0" />
   <parameter name="master_addr_map" value="false" />
@@ -1463,15 +1458,6 @@
    kind="avalon"
    version="18.1"
    start="nios2_gen2_0.data_master"
-   end="SW.s1">
-  <parameter name="arbitrationPriority" value="1" />
-  <parameter name="baseAddress" value="0x04001050" />
-  <parameter name="defaultConnection" value="false" />
- </connection>
- <connection
-   kind="avalon"
-   version="18.1"
-   start="nios2_gen2_0.data_master"
    end="LEDR.s1">
   <parameter name="arbitrationPriority" value="1" />
   <parameter name="baseAddress" value="0x04001040" />
@@ -1597,6 +1583,15 @@
  <connection
    kind="avalon"
    version="18.1"
+   start="nios2_gen2_0.data_master"
+   end="SW.s1">
+  <parameter name="arbitrationPriority" value="1" />
+  <parameter name="baseAddress" value="0x04001050" />
+  <parameter name="defaultConnection" value="false" />
+ </connection>
+ <connection
+   kind="avalon"
+   version="18.1"
    start="nios2_gen2_1.data_master"
    end="SW.s1">
   <parameter name="arbitrationPriority" value="1" />
@@ -1650,7 +1645,6 @@
  </connection>
  <connection kind="clock" version="18.1" start="clk_0.clk" end="nios2_gen2_0.clk" />
  <connection kind="clock" version="18.1" start="clk_0.clk" end="LEDR.clk" />
- <connection kind="clock" version="18.1" start="clk_0.clk" end="SW.clk" />
  <connection kind="clock" version="18.1" start="clk_0.clk" end="KEY.clk" />
  <connection kind="clock" version="18.1" start="clk_0.clk" end="HEX1.clk" />
  <connection kind="clock" version="18.1" start="clk_0.clk" end="HEX2.clk" />
@@ -1684,6 +1678,7 @@
    start="clk_0.clk"
    end="irq_from_proc1.clk" />
  <connection kind="clock" version="18.1" start="clk_0.clk" end="irq_to_proc1.clk" />
+ <connection kind="clock" version="18.1" start="clk_0.clk" end="SW.clk" />
  <connection
    kind="clock"
    version="18.1"
@@ -1702,9 +1697,6 @@
    start="nios2_gen2_0.irq"
    end="KEY.irq">
   <parameter name="irqNumber" value="3" />
- </connection>
- <connection kind="interrupt" version="18.1" start="nios2_gen2_0.irq" end="SW.irq">
-  <parameter name="irqNumber" value="2" />
  </connection>
  <connection
    kind="interrupt"
@@ -1741,9 +1733,6 @@
    end="KEY.irq">
   <parameter name="irqNumber" value="1" />
  </connection>
- <connection kind="interrupt" version="18.1" start="nios2_gen2_1.irq" end="SW.irq">
-  <parameter name="irqNumber" value="7" />
- </connection>
  <connection
    kind="reset"
    version="18.1"
@@ -1767,7 +1756,6 @@
  <connection kind="reset" version="18.1" start="clk_0.clk_reset" end="HEX2.reset" />
  <connection kind="reset" version="18.1" start="clk_0.clk_reset" end="HEX1.reset" />
  <connection kind="reset" version="18.1" start="clk_0.clk_reset" end="KEY.reset" />
- <connection kind="reset" version="18.1" start="clk_0.clk_reset" end="SW.reset" />
  <connection kind="reset" version="18.1" start="clk_0.clk_reset" end="LEDR.reset" />
  <connection
    kind="reset"
@@ -1825,6 +1813,7 @@
    version="18.1"
    start="clk_0.clk_reset"
    end="irq_to_proc1.reset" />
+ <connection kind="reset" version="18.1" start="clk_0.clk_reset" end="SW.reset" />
  <connection
    kind="reset"
    version="18.1"
