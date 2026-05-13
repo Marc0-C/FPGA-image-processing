@@ -92,57 +92,105 @@ void edge_detector(alt_u8 image_data[], alt_u8 image_return[], int size){
 	int im_width = 320;
 	int im_height = 240;
 
-	im_width >>= size;
+	im_width >>= size + 1;
 	im_height >>= size;
 
 
-	int g_x;
-	int g_y;
-	int g;
+	int g_xL;
+	int g_xR;
+	int g_yL;
+	int g_yR;
+	int gL;
+	int gR;
 	int thresh;
 	if (size == 0) thresh = 100;
 	else thresh = 200;
-	int white = 15<<4;
 
-	alt_u8 (*top)[3];
-	alt_u8 (*mid)[3];
-	alt_u8 (*bot)[3];
+	int vertSumL;
+	int vertSumR;
+	int vertSums[4];
+	int topPix[4];
+	int botPix[4];
 
-	for (int j = 0; j < im_width; j++){
-		for (int i = 0; i < im_height; i++){
-			g_x = 0;
-			g_y = 0;
+	alt_u8 *top;
+	alt_u8 *mid;
+	alt_u8 *bot;
 
-			int jj = j;
-			if (jj == 0) jj++;
-			if (jj == im_width - 1) jj--;
-			if (i == 0){
-				mid = &image_data[jj-1];
-				bot = mid;
-			}
-			top = mid;
-			mid = bot;
+	alt_u8 ret;
 
-			if (i != im_height-1) {
-				bot = &image_data[(i+1)*im_width+jj-1];
-			}
+	for (int i = 0; i < im_height; i++){
+		for (int j = 0; j < im_width; j++){
+			g_xL = 0;
+			g_xR = 0;
+			g_yL = 0;
+			g_yR = 0;
+
 			if (j == 0){
-				g_x = *top[0]+2*(*mid[0])+*bot[0]-(*top[1]+2*(*mid[1])+*bot[1]);
-				g_y = *top[0]+2*(*top[0])+*top[1]-(*bot[0]+2*(*bot[0])+*bot[1]);
-			} else if (j == im_width-1){
-				g_x = *top[1]+2*(*mid[1])+*bot[1]-(*top[2]+2*(*mid[2])+*bot[2]);
-				g_y = *top[1]+2*(*top[2])+*top[2]-(*bot[1]+2*(*bot[2])+*bot[2]);
-			} else{
-				g_x = *top[0]+2*(*mid[0])+*bot[0]-(*top[2]+2*(*mid[2])+*bot[2]);
-				g_y = *top[0]+2*(*top[1])+*top[2]-(*bot[0]+2*(*bot[1])+*bot[2]);
+				mid = &image_data[i*im_width];
+				if (i == 0){
+					top = mid;
+					bot = &image_data[(i+1)*im_width];
+				} else if (i == im_height - 1) {
+					top = &image_data[(i-1)*im_width];
+					bot = mid;
+				} else {
+					top = &image_data[(i-1)*im_width];
+					bot = &image_data[(i+1)*im_width];
+				}
+
+				vertSumL = (*top >> 4) + 2*(*mid >> 4) + (*bot >> 4);
+				vertSumR = (*top & 0x0F) + 2*(*mid & 0x0F) + (*bot & 0x0F);
+				vertSums[1] = vertSumL;
+				vertSums[2] = vertSumL;
+				vertSums[3] = vertSumR;
+				topPix[2] = (*top >> 4);
+				topPix[3] = (*top & 0x0F);
+				topPix[1] = topPix[2];
+
+				botPix[2] = (*bot >> 4);
+				botPix[3] = (*bot & 0x0F);
+				botPix[1] = botPix[2];
 			}
 
-			g = abs(g_x) + abs(g_y);
-			if (g > thresh){
-				image_return[i*im_width+j] = white;
+			g_xL = vertSums[1] - vertSums[3];
+			g_yL = topPix[1] + 2*topPix[2] + topPix[3] - (botPix[1] + 2*botPix[2] + botPix[3]);
+			vertSums[0] = vertSums[2];
+			vertSums[1] = vertSums[3];
+			topPix[0] = topPix[2];
+			topPix[1] = topPix[3];
+			botPix[0] = botPix[2];
+			botPix[1] = botPix[3];
+
+			if (j != im_width-1) {
+				top++;
+				mid++;
+				bot++;
+				vertSumL = (*top >> 4) + 2*(*mid >> 4) + (*bot >> 4);
+				vertSumR = (*top & 0x0F) + 2*(*mid & 0x0F) + (*bot & 0x0F);
+				vertSums[2] = vertSumL;
+				vertSums[3] = vertSumR;
+				topPix[2] = (*top >> 4);
+				topPix[3] = (*top & 0x0F);
+				botPix[2] = (*bot >> 4);
+				botPix[3] = (*bot & 0x0F);
+
 			} else {
-				image_return[i*im_width+j] = 0;
+				vertSums[2] = vertSums[3];
+				topPix[2] = topPix[3];
+				botPix[2] = botPix[3];
 			}
+
+			g_xR = vertSums[0] - vertSums[2];
+			g_yR = topPix[0] + 2*topPix[1] + topPix[2] - (botPix[0] + 2*botPix[1] + botPix[2]);
+
+			gL = abs(g_xL) + abs(g_yL);
+			gR = abs(g_xR) + abs(g_yR);
+			ret = 0;
+
+			if (gL > thresh) ret += 0xF0;
+			if (gR > thresh) ret += 0x0F;
+			image_return[i*im_width+j] = ret;
+
 		}
 	}
 
