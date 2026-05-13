@@ -26,41 +26,61 @@ void blur(alt_u8 image_data[], alt_u8 image_return[], int size){
 	int im_width = 320;
 	int im_height = 240;
 
-	im_width >>= size;
+	im_width >>= size + 1;
 	im_height >>= size;
 
-	int sum;
+	int sumL;
+	int sumR;
+	int sumCentL;
+	int sumCentR;
+	int sums[4];
 
 	alt_u8 *top;
 	alt_u8 *mid;
 	alt_u8 *bot;
 
-	for (int j = 0; j < im_width; j++){
-		for (int i = 0; i < im_height; i++){
 
-			int jj = j;
-			if (jj == 0) jj++;
-			if (jj == im_width - 1) jj--;
-			if (i == 0){
-				mid = &image_data[jj-1];
-				bot = mid;
-			}
-			top = mid;
-			mid = bot;
-
-			if (i != im_height-1) {
-				bot = &image_data[(i+1)*im_width+jj-1];
-			}
+	for (int i = 0; i < im_height; i++){
+		for (int j = 0; j < im_width; j++){
 
 			if (j == 0){
-				sum = top[0]+top[0]+top[1]+mid[0]+mid[0]+mid[1]+bot[0]+bot[0]+bot[1];
-			} else if (j == im_width-1){
-				sum = top[1]+top[2]+top[2]+mid[1]+mid[2]+mid[2]+bot[1]+bot[2]+bot[2];
-			} else{
-				sum = top[0]+top[1]+top[2]+mid[0]+mid[1]+mid[2]+bot[0]+bot[1]+bot[2];
+				mid = &image_data[i*im_width];
+				if (i == 0){
+					top = mid;
+					bot = &image_data[(i+1)*im_width];
+				} else if (i == im_height - 1) {
+					top = &image_data[(i-1)*im_width];
+					bot = mid;
+				} else {
+					top = &image_data[(i-1)*im_width];
+					bot = &image_data[(i+1)*im_width];
+				}
 
+				sumCentL = (*top >> 4) + (*mid >> 4) + (*bot >> 4);
+				sumCentR = (*top & 0x0F) + (*mid & 0x0F) + (*bot & 0x0F);
+				sums[1] = sumCentL;
+				sums[2] = sumCentL;
+				sums[3] = sumCentR;
 			}
-			image_return[i*im_width+j] = sum / 9;
+
+			sumL = sums[1] + sums[2] + sums[3];
+			sums[0] = sums[2];
+			sums[1] = sums[3];
+
+			if (j != im_width-1) {
+				top++;
+				mid++;
+				bot++;
+				sumCentL = (*top >> 4) + (*mid >> 4) + (*bot >> 4);
+				sumCentR = (*top & 0x0F) + (*mid & 0x0F) + (*bot & 0x0F);
+				sums[2] = sumCentL;
+				sums[3] = sumCentR;
+			} else sums[2] = sums[3];
+
+			sumR = sums[0] + sums[1] + sums[2];
+
+
+			image_return[i*im_width+j] = ((sumL / 9)<<4) + ((sumR / 9) & 0x0F);
 		}
 	}
 
