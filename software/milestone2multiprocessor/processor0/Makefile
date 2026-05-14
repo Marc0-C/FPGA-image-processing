@@ -142,7 +142,8 @@ ACDS_VERSION := 18.1
 ELF := processor0.elf
 
 # Paths to C, C++, and assembly source files.
-C_SRCS := hello_world_small.c
+C_SRCS += image_filtering.c
+C_SRCS += proc0.c
 CXX_SRCS :=
 ASM_SRCS :=
 

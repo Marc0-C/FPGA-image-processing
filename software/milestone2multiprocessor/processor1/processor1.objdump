@@ -35,43 +35,43 @@ Idx Name          Size      VMA       LMA       File off  Algn
                   CONTENTS, READONLY
   8 .debug_aranges 000004b0  00000000  00000000  00002828  2**3
                   CONTENTS, READONLY, DEBUGGING
-  9 .debug_info   000064e5  00000000  00000000  00002cd8  2**0
+  9 .debug_info   000064be  00000000  00000000  00002cd8  2**0
                   CONTENTS, READONLY, DEBUGGING
- 10 .debug_abbrev 0000248e  00000000  00000000  000091bd  2**0
+ 10 .debug_abbrev 0000248e  00000000  00000000  00009196  2**0
                   CONTENTS, READONLY, DEBUGGING
- 11 .debug_line   00002734  00000000  00000000  0000b64b  2**0
+ 11 .debug_line   00002734  00000000  00000000  0000b624  2**0
                   CONTENTS, READONLY, DEBUGGING
- 12 .debug_frame  00000684  00000000  00000000  0000dd80  2**2
+ 12 .debug_frame  00000684  00000000  00000000  0000dd58  2**2
                   CONTENTS, READONLY, DEBUGGING
- 13 .debug_str    00001a03  00000000  00000000  0000e404  2**0
+ 13 .debug_str    00001a6d  00000000  00000000  0000e3dc  2**0
                   CONTENTS, READONLY, DEBUGGING
- 14 .debug_loc    00001ded  00000000  00000000  0000fe07  2**0
+ 14 .debug_loc    00001ded  00000000  00000000  0000fe49  2**0
                   CONTENTS, READONLY, DEBUGGING
- 15 .debug_alt_sim_info 00000030  00000000  00000000  00011bf4  2**2
+ 15 .debug_alt_sim_info 00000030  00000000  00000000  00011c38  2**2
                   CONTENTS, READONLY, DEBUGGING
- 16 .debug_ranges 00000380  00000000  00000000  00011c28  2**3
+ 16 .debug_ranges 00000380  00000000  00000000  00011c68  2**3
                   CONTENTS, READONLY, DEBUGGING
- 17 .thread_model 00000003  00000000  00000000  0001374a  2**0
+ 17 .thread_model 00000003  00000000  00000000  0001378a  2**0
                   CONTENTS, READONLY
- 18 .cpu          0000000c  00000000  00000000  0001374d  2**0
+ 18 .cpu          0000000c  00000000  00000000  0001378d  2**0
                   CONTENTS, READONLY
- 19 .qsys         00000001  00000000  00000000  00013759  2**0
+ 19 .qsys         00000001  00000000  00000000  00013799  2**0
                   CONTENTS, READONLY
- 20 .simulation_enabled 00000001  00000000  00000000  0001375a  2**0
+ 20 .simulation_enabled 00000001  00000000  00000000  0001379a  2**0
                   CONTENTS, READONLY
- 21 .stderr_dev   0000000b  00000000  00000000  0001375b  2**0
+ 21 .stderr_dev   0000000b  00000000  00000000  0001379b  2**0
                   CONTENTS, READONLY
- 22 .stdin_dev    0000000b  00000000  00000000  00013766  2**0
+ 22 .stdin_dev    0000000b  00000000  00000000  000137a6  2**0
                   CONTENTS, READONLY
- 23 .stdout_dev   0000000b  00000000  00000000  00013771  2**0
+ 23 .stdout_dev   0000000b  00000000  00000000  000137b1  2**0
                   CONTENTS, READONLY
- 24 .sopc_system_name 0000000b  00000000  00000000  0001377c  2**0
+ 24 .sopc_system_name 0000000b  00000000  00000000  000137bc  2**0
                   CONTENTS, READONLY
- 25 .quartus_project_dir 00000052  00000000  00000000  00013787  2**0
+ 25 .quartus_project_dir 00000045  00000000  00000000  000137c7  2**0
                   CONTENTS, READONLY
- 26 .jdi          0001079c  00000000  00000000  000137d9  2**0
+ 26 .jdi          0000eeef  00000000  00000000  0001380c  2**0
                   CONTENTS, READONLY
- 27 .sopcinfo     000da3ce  00000000  00000000  00023f75  2**0
+ 27 .sopcinfo     000da3ce  00000000  00000000  000226fb  2**0
                   CONTENTS, READONLY
 SYMBOL TABLE:
 02000000 l    d  .entry	00000000 .entry
@@ -2077,24 +2077,12 @@ int alt_iic_isr_register(alt_u32 ic_id, alt_u32 irq, alt_isr_func isr,
  20010dc:	f800283a 	ret
 
 020010e0 <alt_load>:
- * there is no bootloader, so this application is responsible for loading to
- * RAM any sections that are required.
- */  
-
-void alt_load (void)
-{
  20010e0:	deffff04 	addi	sp,sp,-4
  20010e4:	01008034 	movhi	r4,512
  20010e8:	01408034 	movhi	r5,512
  20010ec:	dfc00015 	stw	ra,0(sp)
  20010f0:	2105b504 	addi	r4,r4,5844
  20010f4:	29460004 	addi	r5,r5,6144
-
-static void ALT_INLINE alt_load_section (alt_u32* from, 
-                                         alt_u32* to, 
-                                         alt_u32* end)
-{
-  if (to != from)
  20010f8:	2140061e 	bne	r4,r5,2001114 <alt_load+0x34>
  20010fc:	01008034 	movhi	r4,512
  2001100:	01408034 	movhi	r5,512
@@ -2106,11 +2094,7 @@ static void ALT_INLINE alt_load_section (alt_u32* from,
  2001118:	18c60004 	addi	r3,r3,6144
  200111c:	1907c83a 	sub	r3,r3,r4
  2001120:	0005883a 	mov	r2,zero
-  {
-    while( to != end )
  2001124:	10fff526 	beq	r2,r3,20010fc <__alt_data_end+0xff76bc9c>
-    {
-      *to++ = *from++;
  2001128:	114f883a 	add	r7,r2,r5
  200112c:	39c00017 	ldw	r7,0(r7)
  2001130:	110d883a 	add	r6,r2,r4
@@ -2121,62 +2105,28 @@ static void ALT_INLINE alt_load_section (alt_u32* from,
  2001144:	01408034 	movhi	r5,512
  2001148:	21059d04 	addi	r4,r4,5748
  200114c:	29459d04 	addi	r5,r5,5748
-
-static void ALT_INLINE alt_load_section (alt_u32* from, 
-                                         alt_u32* to, 
-                                         alt_u32* end)
-{
-  if (to != from)
  2001150:	2140101e 	bne	r4,r5,2001194 <alt_load+0xb4>
  2001154:	00000b06 	br	2001184 <alt_load+0xa4>
  2001158:	00c08034 	movhi	r3,512
  200115c:	18c06204 	addi	r3,r3,392
  2001160:	1907c83a 	sub	r3,r3,r4
  2001164:	0005883a 	mov	r2,zero
-  {
-    while( to != end )
  2001168:	10fff526 	beq	r2,r3,2001140 <__alt_data_end+0xff76bce0>
-    {
-      *to++ = *from++;
  200116c:	114f883a 	add	r7,r2,r5
  2001170:	39c00017 	ldw	r7,0(r7)
  2001174:	110d883a 	add	r6,r2,r4
  2001178:	10800104 	addi	r2,r2,4
  200117c:	31c00015 	stw	r7,0(r6)
  2001180:	003ff906 	br	2001168 <__alt_data_end+0xff76bd08>
-  
-  /*
-   * Now ensure that the caches are in synch.
-   */
-  
-  alt_dcache_flush_all();
  2001184:	200148c0 	call	200148c <alt_dcache_flush_all>
-  alt_icache_flush_all();
-}
  2001188:	dfc00017 	ldw	ra,0(sp)
  200118c:	dec00104 	addi	sp,sp,4
-  /*
-   * Now ensure that the caches are in synch.
-   */
-  
-  alt_dcache_flush_all();
-  alt_icache_flush_all();
  2001190:	20015841 	jmpi	2001584 <alt_icache_flush_all>
  2001194:	00c08034 	movhi	r3,512
  2001198:	18c5b504 	addi	r3,r3,5844
  200119c:	1907c83a 	sub	r3,r3,r4
-
-static void ALT_INLINE alt_load_section (alt_u32* from, 
-                                         alt_u32* to, 
-                                         alt_u32* end)
-{
-  if (to != from)
  20011a0:	0005883a 	mov	r2,zero
-  {
-    while( to != end )
  20011a4:	18bff726 	beq	r3,r2,2001184 <__alt_data_end+0xff76bd24>
-    {
-      *to++ = *from++;
  20011a8:	114f883a 	add	r7,r2,r5
  20011ac:	39c00017 	ldw	r7,0(r7)
  20011b0:	110d883a 	add	r6,r2,r4
@@ -2605,205 +2555,63 @@ int altera_avalon_mutex_first_lock( alt_mutex_dev* dev )
  20013a0:	f800283a 	ret
 
 020013a4 <alt_avalon_spi_command>:
-
-int alt_avalon_spi_command(alt_u32 base, alt_u32 slave,
-                           alt_u32 write_length, const alt_u8 * write_data,
-                           alt_u32 read_length, alt_u8 * read_data,
-                           alt_u32 flags)
-{
  20013a4:	d8800017 	ldw	r2,0(sp)
  20013a8:	da000117 	ldw	r8,4(sp)
-  /* Warning: this function is not currently safe if called in a multi-threaded
-   * environment, something above must perform locking to make it safe if more
-   * than one thread intends to use it.
-   */
-
-  IOWR_ALTERA_AVALON_SPI_SLAVE_SEL(base, 1 << slave);
  20013ac:	00c00044 	movi	r3,1
-
-int alt_avalon_spi_command(alt_u32 base, alt_u32 slave,
-                           alt_u32 write_length, const alt_u8 * write_data,
-                           alt_u32 read_length, alt_u8 * read_data,
-                           alt_u32 flags)
-{
  20013b0:	da400217 	ldw	r9,8(sp)
-  /* Warning: this function is not currently safe if called in a multi-threaded
-   * environment, something above must perform locking to make it safe if more
-   * than one thread intends to use it.
-   */
-
-  IOWR_ALTERA_AVALON_SPI_SLAVE_SEL(base, 1 << slave);
  20013b4:	194a983a 	sll	r5,r3,r5
-int alt_avalon_spi_command(alt_u32 base, alt_u32 slave,
-                           alt_u32 write_length, const alt_u8 * write_data,
-                           alt_u32 read_length, alt_u8 * read_data,
-                           alt_u32 flags)
-{
-  const alt_u8 * write_end = write_data + write_length;
  20013b8:	399d883a 	add	r14,r7,r6
-  alt_u8 * read_end = read_data + read_length;
  20013bc:	409f883a 	add	r15,r8,r2
-  /* Warning: this function is not currently safe if called in a multi-threaded
-   * environment, something above must perform locking to make it safe if more
-   * than one thread intends to use it.
-   */
-
-  IOWR_ALTERA_AVALON_SPI_SLAVE_SEL(base, 1 << slave);
  20013c0:	21400535 	stwio	r5,20(r4)
-  
-  /* Set the SSO bit (force chipselect) only if the toggle flag is not set */
-  if ((flags & ALT_AVALON_SPI_COMMAND_TOGGLE_SS_N) == 0) {
  20013c4:	48c0008c 	andi	r3,r9,2
  20013c8:	1800021e 	bne	r3,zero,20013d4 <alt_avalon_spi_command+0x30>
-    IOWR_ALTERA_AVALON_SPI_CONTROL(base, ALTERA_AVALON_SPI_CONTROL_SSO_MSK);
  20013cc:	00c10004 	movi	r3,1024
  20013d0:	20c00335 	stwio	r3,12(r4)
-  /*
-   * Discard any stale data present in the RXDATA register, in case
-   * previous communication was interrupted and stale data was left
-   * behind.
-   */
-  IORD_ALTERA_AVALON_SPI_RXDATA(base);
  20013d4:	20c00037 	ldwio	r3,0(r4)
-
-  /* We must not send more than two bytes to the target before it has
-   * returned any as otherwise it will overflow. */
-  /* Unfortunately the hardware does not seem to work with credits > 1,
-   * leave it at 1 for now. */
-  alt_32 credits = 1;
  20013d8:	00c00044 	movi	r3,1
-                           alt_u32 flags)
-{
-  const alt_u8 * write_end = write_data + write_length;
-  alt_u8 * read_end = read_data + read_length;
-
-  alt_u32 write_zeros = read_length;
  20013dc:	1015883a 	mov	r10,r2
-  for ( ; ; )
-  {
-    
-    do
-    {
-      status = IORD_ALTERA_AVALON_SPI_STATUS(base);
  20013e0:	22c00204 	addi	r11,r4,8
-      if (write_data < write_end)
-        IOWR_ALTERA_AVALON_SPI_TXDATA(base, *write_data++);
-      else if (write_zeros > 0)
-      {
-        write_zeros--;
-        IOWR_ALTERA_AVALON_SPI_TXDATA(base, 0);
  20013e4:	23000104 	addi	r12,r4,4
-  for ( ; ; )
-  {
-    
-    do
-    {
-      status = IORD_ALTERA_AVALON_SPI_STATUS(base);
  20013e8:	59400037 	ldwio	r5,0(r11)
-    }
-    while (((status & ALTERA_AVALON_SPI_STATUS_TRDY_MSK) == 0 || credits == 0) &&
  20013ec:	2b40100c 	andi	r13,r5,64
  20013f0:	2940200c 	andi	r5,r5,128
-            (status & ALTERA_AVALON_SPI_STATUS_RRDY_MSK) == 0);
  20013f4:	68000126 	beq	r13,zero,20013fc <alt_avalon_spi_command+0x58>
-    
-    do
-    {
-      status = IORD_ALTERA_AVALON_SPI_STATUS(base);
-    }
-    while (((status & ALTERA_AVALON_SPI_STATUS_TRDY_MSK) == 0 || credits == 0) &&
  20013f8:	1800031e 	bne	r3,zero,2001408 <alt_avalon_spi_command+0x64>
  20013fc:	283ffa26 	beq	r5,zero,20013e8 <__alt_data_end+0xff76bf88>
-            (status & ALTERA_AVALON_SPI_STATUS_RRDY_MSK) == 0);
-
-    if ((status & ALTERA_AVALON_SPI_STATUS_TRDY_MSK) != 0 && credits > 0)
  2001400:	68000e26 	beq	r13,zero,200143c <alt_avalon_spi_command+0x98>
  2001404:	00001e06 	br	2001480 <alt_avalon_spi_command+0xdc>
  2001408:	00c00c0e 	bge	zero,r3,200143c <alt_avalon_spi_command+0x98>
-    {
-      credits--;
  200140c:	18ffffc4 	addi	r3,r3,-1
-
-      if (write_data < write_end)
  2001410:	3b80052e 	bgeu	r7,r14,2001428 <alt_avalon_spi_command+0x84>
-        IOWR_ALTERA_AVALON_SPI_TXDATA(base, *write_data++);
  2001414:	3b400044 	addi	r13,r7,1
  2001418:	39c00003 	ldbu	r7,0(r7)
  200141c:	61c00035 	stwio	r7,0(r12)
  2001420:	680f883a 	mov	r7,r13
  2001424:	00000506 	br	200143c <alt_avalon_spi_command+0x98>
-      else if (write_zeros > 0)
  2001428:	50000326 	beq	r10,zero,2001438 <alt_avalon_spi_command+0x94>
-      {
-        write_zeros--;
  200142c:	52bfffc4 	addi	r10,r10,-1
-        IOWR_ALTERA_AVALON_SPI_TXDATA(base, 0);
  2001430:	60000035 	stwio	zero,0(r12)
  2001434:	00000106 	br	200143c <alt_avalon_spi_command+0x98>
-      }
-      else
-        credits = -1024;
  2001438:	00ff0004 	movi	r3,-1024
-    };
-
-    if ((status & ALTERA_AVALON_SPI_STATUS_RRDY_MSK) != 0)
  200143c:	283fea26 	beq	r5,zero,20013e8 <__alt_data_end+0xff76bf88>
-    {
-      alt_u32 rxdata = IORD_ALTERA_AVALON_SPI_RXDATA(base);
  2001440:	21400037 	ldwio	r5,0(r4)
-
-      if (read_ignore > 0)
  2001444:	30000226 	beq	r6,zero,2001450 <alt_avalon_spi_command+0xac>
-        read_ignore--;
  2001448:	31bfffc4 	addi	r6,r6,-1
  200144c:	00000206 	br	2001458 <alt_avalon_spi_command+0xb4>
-      else
-        *read_data++ = (alt_u8)rxdata;
  2001450:	41400005 	stb	r5,0(r8)
  2001454:	42000044 	addi	r8,r8,1
-      credits++;
  2001458:	18c00044 	addi	r3,r3,1
-
-      if (read_ignore == 0 && read_data == read_end)
  200145c:	303fe21e 	bne	r6,zero,20013e8 <__alt_data_end+0xff76bf88>
  2001460:	43ffe11e 	bne	r8,r15,20013e8 <__alt_data_end+0xff76bf88>
-  }
-
-  /* Wait until the interface has finished transmitting */
-  do
-  {
-    status = IORD_ALTERA_AVALON_SPI_STATUS(base);
  2001464:	58c00037 	ldwio	r3,0(r11)
-  }
-  while ((status & ALTERA_AVALON_SPI_STATUS_TMT_MSK) == 0);
  2001468:	18c0080c 	andi	r3,r3,32
  200146c:	183ffd26 	beq	r3,zero,2001464 <__alt_data_end+0xff76c004>
-
-  /* Clear SSO (release chipselect) unless the caller is going to
-   * keep using this chip
-   */
-  if ((flags & ALT_AVALON_SPI_COMMAND_MERGE) == 0)
  2001470:	4a40004c 	andi	r9,r9,1
  2001474:	4800041e 	bne	r9,zero,2001488 <alt_avalon_spi_command+0xe4>
-    IOWR_ALTERA_AVALON_SPI_CONTROL(base, 0);
  2001478:	20000335 	stwio	zero,12(r4)
-
-  return read_length;
  200147c:	f800283a 	ret
-      status = IORD_ALTERA_AVALON_SPI_STATUS(base);
-    }
-    while (((status & ALTERA_AVALON_SPI_STATUS_TRDY_MSK) == 0 || credits == 0) &&
-            (status & ALTERA_AVALON_SPI_STATUS_RRDY_MSK) == 0);
-
-    if ((status & ALTERA_AVALON_SPI_STATUS_TRDY_MSK) != 0 && credits > 0)
  2001480:	00ffef0e 	bge	zero,r3,2001440 <__alt_data_end+0xff76bfe0>
  2001484:	003fe106 	br	200140c <__alt_data_end+0xff76bfac>
-   */
-  if ((flags & ALT_AVALON_SPI_COMMAND_MERGE) == 0)
-    IOWR_ALTERA_AVALON_SPI_CONTROL(base, 0);
-
-  return read_length;
-}
  2001488:	f800283a 	ret
 
 0200148c <alt_dcache_flush_all>:
@@ -2834,91 +2642,31 @@ void alt_dcache_flush_all (void)
  20014a0:	f800283a 	ret
 
 020014a4 <alt_dev_llist_insert>:
-{
-  /*
-   * check that the device exists, and that it has a valid name.
-   */
-
-  if (!dev || !dev->name)
  20014a4:	20000226 	beq	r4,zero,20014b0 <alt_dev_llist_insert+0xc>
  20014a8:	20800217 	ldw	r2,8(r4)
  20014ac:	1000101e 	bne	r2,zero,20014f0 <alt_dev_llist_insert+0x4c>
  20014b0:	d0a00617 	ldw	r2,-32744(gp)
  20014b4:	10000926 	beq	r2,zero,20014dc <alt_dev_llist_insert+0x38>
-/*
- *
- */
-
-int alt_dev_llist_insert (alt_dev_llist* dev, alt_llist* list)
-{
  20014b8:	deffff04 	addi	sp,sp,-4
  20014bc:	dfc00015 	stw	ra,0(sp)
  20014c0:	103ee83a 	callr	r2
-   * check that the device exists, and that it has a valid name.
-   */
-
-  if (!dev || !dev->name)
-  {
-    ALT_ERRNO = EINVAL;
  20014c4:	00c00584 	movi	r3,22
  20014c8:	10c00015 	stw	r3,0(r2)
-    return -EINVAL;
  20014cc:	00bffa84 	movi	r2,-22
-   */
-  
-  alt_llist_insert(list, &dev->llist);
-
-  return 0;  
-}
  20014d0:	dfc00017 	ldw	ra,0(sp)
  20014d4:	dec00104 	addi	sp,sp,4
  20014d8:	f800283a 	ret
  20014dc:	d0a05904 	addi	r2,gp,-32412
-   * check that the device exists, and that it has a valid name.
-   */
-
-  if (!dev || !dev->name)
-  {
-    ALT_ERRNO = EINVAL;
  20014e0:	00c00584 	movi	r3,22
  20014e4:	10c00015 	stw	r3,0(r2)
-    return -EINVAL;
  20014e8:	00bffa84 	movi	r2,-22
-   */
-  
-  alt_llist_insert(list, &dev->llist);
-
-  return 0;  
-}
  20014ec:	f800283a 	ret
-
-static ALT_INLINE void ALT_ALWAYS_INLINE alt_llist_insert(alt_llist* list, 
-                alt_llist* entry)
-{
-  entry->previous = list;
-  entry->next     = list->next;
  20014f0:	28800017 	ldw	r2,0(r5)
- */
-
-static ALT_INLINE void ALT_ALWAYS_INLINE alt_llist_insert(alt_llist* list, 
-                alt_llist* entry)
-{
-  entry->previous = list;
  20014f4:	21400115 	stw	r5,4(r4)
-  entry->next     = list->next;
  20014f8:	20800015 	stw	r2,0(r4)
-
-  list->next->previous = entry;
  20014fc:	28800017 	ldw	r2,0(r5)
  2001500:	11000115 	stw	r4,4(r2)
-  list->next           = entry;
  2001504:	29000015 	stw	r4,0(r5)
-   * register the device.
-   */
-  
-  alt_llist_insert(list, &dev->llist);
-
-  return 0;  
  2001508:	0005883a 	mov	r2,zero
  200150c:	f800283a 	ret
 
