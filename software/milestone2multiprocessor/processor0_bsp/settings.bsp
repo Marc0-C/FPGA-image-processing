@@ -2,8 +2,8 @@
 <sch:Settings xmlns:sch="http://www.altera.com/embeddedsw/bsp/schema">
         <BspType>hal</BspType>
         <BspVersion>default</BspVersion>
-        <BspGeneratedTimeStamp>13-May-2026 12:56:22</BspGeneratedTimeStamp>
-        <BspGeneratedUnixTimeStamp>1778640982359</BspGeneratedUnixTimeStamp>
+        <BspGeneratedTimeStamp>14-May-2026 12:18:58</BspGeneratedTimeStamp>
+        <BspGeneratedUnixTimeStamp>1778725138440</BspGeneratedUnixTimeStamp>
         <BspGeneratedLocation>C:\Users\julia\practicalsECE3073\PROJECT\Timothycocks-ECE3073-Project2026-GroupA06\software\milestone2multiprocessor\processor0_bsp</BspGeneratedLocation>
         <BspSettingsFile>settings.bsp</BspSettingsFile>
         <SopcDesignFile>..\..\..\nios_system.sopcinfo</SopcDesignFile>
