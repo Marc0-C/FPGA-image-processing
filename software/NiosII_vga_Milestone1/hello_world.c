@@ -403,7 +403,7 @@ void display_img(int width, int height, int startx, int starty, alt_u8 *buffer) 
     //printf("BR: %d\n", buffer[width * height - 1] >> 4);
 
     for (int i = 0; i < height; i++) {
-        for (int j = 0; j < width/2; j++) {
+        for (int j = width/2-1; j >= 0; j--) {
             int screen_x = startx + 2*j;
             int screen_y = starty + i;
 
@@ -414,7 +414,7 @@ void display_img(int width, int height, int startx, int starty, alt_u8 *buffer) 
             pix++;
 
 			IOWR(PIX_DATA_B_BASE, 0, *pix & 0xF);
-			IOWR(PIX_BUFF_ADDR_BASE, 0, (screen_y * 320) + screen_x+1);
+			IOWR(PIX_BUFF_ADDR_BASE, 0, (screen_y * 320) + screen_x-1);
 			IOWR(PIX_DATA_R_BASE, 0, (*pix >> 4) & 0xF);
 
 			pix++;

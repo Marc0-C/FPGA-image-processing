@@ -7,15 +7,21 @@ void flip_image(alt_u8 image_data[], alt_u8 image_return[], int axis, int size){
 
 	im_width >>= size+1;
 	im_height >>= size;
-	int im_size = im_width*im_height;
+	int im_size = 3*im_width*im_height;
 
-	alt_u8 temp;
+	alt_u8 b0;
+	alt_u8 b1;
+	alt_u8 b2;
 	int id;
 	for (int i = 0; i < im_height; i++){
 		for (int j = 0; j < im_width; j++){
 			id = i*im_width+j;
-			temp = image_data[id];
-			image_return[im_size-1-id] = (temp << 4) + (temp >> 4);
+			b0 = image_data[3*id];
+			b1 = image_data[3*id+1];
+			b2 = image_data[3*id+2];
+			image_return[im_size-1-3*id] = (b1 << 4) + (b0 >> 4);
+			image_return[im_size-2-3*id] = (b0 << 4) + (b2 >> 4);
+			image_return[im_size-3-3*id] = (b2 << 4) + (b1 >> 4);
 		}
 	}
 	return;
@@ -103,8 +109,8 @@ void edge_detector(alt_u8 image_data[], alt_u8 image_return[], int size){
 	int gL;
 	int gR;
 	int thresh;
-	if (size == 0) thresh = 100;
-	else thresh = 200;
+	if (size == 0) thresh = 10;
+	else thresh = 15;
 
 	int vertSumL;
 	int vertSumR;
