@@ -14,6 +14,7 @@
 //#define SHARED_MAILBOX_BASE 0x03312D20
 #define SHARED_MAILBOX_BASE 0x029896A0//actual mailbox starts at 0x02895460 but its reserved for flags
 // -1 KEY, -2 ROTATE, -3 SWITCH, -4,-5,-6: CONTROL key, rot and switch
+#define MAILBOX_BASE_PRINT 0x017A1220
 
 #define IM_SIZE (240 * 320)
 #define IM_SIZEsmll (120 * 160)
@@ -144,7 +145,7 @@ int main() {
 		if(key == 0){
 			//apply switch functionality for not quadrature
 						//sw = 0
-			printf("topleft, %d \n", top_left);
+			//printf("topleft, %d \n", top_left);
 			if (top_left == 0){display_img(320, 240, 0, 0, processing_buffer);}
 			if (top_left == 1){display_imgwhite(320, 240, 0, 0, processing_buffer);}
 			if (top_left == 2){display_imgblack(320, 240, 0, 0, processing_buffer);}
@@ -238,9 +239,11 @@ void display_img(int width, int height, int startx, int starty, alt_u8 *processi
             int screen_x = startx + j;
             int screen_y = starty + i;
 
-            IOWR(PIX_BUFF_ADDR_BASE, 0, (screen_y * 320) + screen_x);
-            IOWR(PIX_DATA_BASE, 0, img[i * width + j - 1] >> 4); // bit shift by 4 coz 8 bit value only have 4 bits colour
-
+            //IOWR(PIX_BUFF_ADDR_BASE, 0, (screen_y * 320) + screen_x);
+            //IOWR(PIX_DATA_BASE, 0, img[i * width + j - 1] >> 4); // bit shift by 4 coz 8 bit value only have 4 bits colour
+            int location = (screen_y * 320) + screen_x;
+            int pixel = img[i * width + j - 1] >> 4;
+            IOWR_8DIRECT(MAILBOX_BASE_PRINT, location , pixel);
 
         }
     }
@@ -259,9 +262,12 @@ void display_imgwhite(int width, int height, int startx, int starty, alt_u8 *pro
             int screen_x = startx + j;
             int screen_y = starty + i;
 
-            IOWR(PIX_BUFF_ADDR_BASE, 0, (screen_y * 320) + screen_x);
+            //IOWR(PIX_BUFF_ADDR_BASE, 0, (screen_y * 320) + screen_x);
             // 0xF is the 4-bit value for white (all bits high)
-            IOWR(PIX_DATA_BASE, 0, 0xF);
+            //IOWR(PIX_DATA_BASE, 0, 0xF);
+            int location = (screen_y * 320) + screen_x;
+            int pixel = 0xF;
+            IOWR_8DIRECT(MAILBOX_BASE_PRINT, location , pixel);
 
         }
     }
@@ -280,9 +286,12 @@ void display_imgblack(int width, int height, int startx, int starty, alt_u8 *pro
             int screen_x = startx + j;
             int screen_y = starty + i;
 
-            IOWR(PIX_BUFF_ADDR_BASE, 0, (screen_y * 320) + screen_x);
+            //IOWR(PIX_BUFF_ADDR_BASE, 0, (screen_y * 320) + screen_x);
             // 0xF is the 4-bit value for white (all bits high)
-            IOWR(PIX_DATA_BASE, 0, 0x0);
+            //IOWR(PIX_DATA_BASE, 0, 0x0);
+            int location = (screen_y * 320) + screen_x;
+            int pixel = 0xF;
+            IOWR_8DIRECT(MAILBOX_BASE_PRINT, location , 0x0);
 
         }
     }
@@ -301,16 +310,19 @@ void display_imggrey(int width, int height, int startx, int starty, alt_u8 *proc
             int screen_x = startx + j;
             int screen_y = starty + i;
 
-            IOWR(PIX_BUFF_ADDR_BASE, 0, (screen_y * 320) + screen_x);
+            //IOWR(PIX_BUFF_ADDR_BASE, 0, (screen_y * 320) + screen_x);
             // 0xF is the 4-bit value for white (all bits high)
-            IOWR(PIX_DATA_BASE, 0, 0x8);
+            //IOWR(PIX_DATA_BASE, 0, 0x8);
+            int location = (screen_y * 320) + screen_x;
+            int pixel = 0xF;
+            IOWR_8DIRECT(MAILBOX_BASE_PRINT, location , 0x8);
 
         }
     }
+
+
+
 }
-
-
-
 
 
 void display_fps(int duration) {

@@ -182,7 +182,7 @@ int main() {
     	}
     	if(switchmoved == 1){
     		switchvalue = IORD_ALTERA_AVALON_PIO_DATA(SW_BASE);
-    		altera_avalon_mutex_lock(mutex, 1)
+    		altera_avalon_mutex_lock(mutex, 1);
 			IOWR_8DIRECT(SHARED_MAILBOX_BASE, - 3 , switchvalue); //set rotation in sdram
 			IOWR_8DIRECT(SHARED_MAILBOX_BASE, - 6 , 1); //set rotation contol to 1
 			altera_avalon_mutex_unlock(mutex);
