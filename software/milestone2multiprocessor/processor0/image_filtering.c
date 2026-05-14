@@ -10,12 +10,32 @@ void flip_image(alt_u8 image_data[], alt_u8 image_return[], int axis, int size){
 	int im_size = im_width*im_height;
 
 
-	for (int i = 0; i < im_size; i += im_width){
-		for (int j = 0; j < im_width; j += 1){
-			if (axis == 0) {
-				image_return[j + i] = image_data[i+im_width-1-j];
-			} else {
-				image_return[j + i] = image_data[j+im_size-im_width-i];
+	if (axis == 2) {
+		for (int y = 0; y < im_height; y++) {
+			for (int x = 0; x < im_width; x++) {
+
+				int src_x = im_width - 1 - x;
+				int src_y = im_height - 1 - y;
+
+				// shift left by 2 with wrap
+				int dst_x = (x + im_width - 2) % im_width;
+				int dst_y = y;
+
+				int src = src_y * im_width + src_x;
+				int dst = dst_y * im_width + dst_x;
+
+				image_return[dst] = image_data[src];
+			}
+		}
+
+	} else {
+		for (int i = 0; i < im_size; i += im_width){
+			for (int j = 0; j < im_width; j += 1){
+				if (axis == 0) {
+					image_return[j + i] = image_data[i+im_width-1-j];
+				} else {
+					image_return[j + i] = image_data[j+im_size-im_width-i];
+				}
 			}
 		}
 	}

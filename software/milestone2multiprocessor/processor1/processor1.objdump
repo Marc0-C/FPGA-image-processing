@@ -39,39 +39,39 @@ Idx Name          Size      VMA       LMA       File off  Algn
                   CONTENTS, READONLY, DEBUGGING
  10 .debug_abbrev 0000248e  00000000  00000000  00009196  2**0
                   CONTENTS, READONLY, DEBUGGING
- 11 .debug_line   00002734  00000000  00000000  0000b624  2**0
+ 11 .debug_line   00002728  00000000  00000000  0000b624  2**0
                   CONTENTS, READONLY, DEBUGGING
- 12 .debug_frame  00000684  00000000  00000000  0000dd58  2**2
+ 12 .debug_frame  00000684  00000000  00000000  0000dd4c  2**2
                   CONTENTS, READONLY, DEBUGGING
- 13 .debug_str    00001a6d  00000000  00000000  0000e3dc  2**0
+ 13 .debug_str    00001a61  00000000  00000000  0000e3d0  2**0
                   CONTENTS, READONLY, DEBUGGING
- 14 .debug_loc    00001ded  00000000  00000000  0000fe49  2**0
+ 14 .debug_loc    00001ded  00000000  00000000  0000fe31  2**0
                   CONTENTS, READONLY, DEBUGGING
- 15 .debug_alt_sim_info 00000030  00000000  00000000  00011c38  2**2
+ 15 .debug_alt_sim_info 00000030  00000000  00000000  00011c20  2**2
                   CONTENTS, READONLY, DEBUGGING
- 16 .debug_ranges 00000380  00000000  00000000  00011c68  2**3
+ 16 .debug_ranges 00000380  00000000  00000000  00011c50  2**3
                   CONTENTS, READONLY, DEBUGGING
- 17 .thread_model 00000003  00000000  00000000  0001378a  2**0
+ 17 .thread_model 00000003  00000000  00000000  00013766  2**0
                   CONTENTS, READONLY
- 18 .cpu          0000000c  00000000  00000000  0001378d  2**0
+ 18 .cpu          0000000c  00000000  00000000  00013769  2**0
                   CONTENTS, READONLY
- 19 .qsys         00000001  00000000  00000000  00013799  2**0
+ 19 .qsys         00000001  00000000  00000000  00013775  2**0
                   CONTENTS, READONLY
- 20 .simulation_enabled 00000001  00000000  00000000  0001379a  2**0
+ 20 .simulation_enabled 00000001  00000000  00000000  00013776  2**0
                   CONTENTS, READONLY
- 21 .stderr_dev   0000000b  00000000  00000000  0001379b  2**0
+ 21 .stderr_dev   0000000b  00000000  00000000  00013777  2**0
                   CONTENTS, READONLY
- 22 .stdin_dev    0000000b  00000000  00000000  000137a6  2**0
+ 22 .stdin_dev    0000000b  00000000  00000000  00013782  2**0
                   CONTENTS, READONLY
- 23 .stdout_dev   0000000b  00000000  00000000  000137b1  2**0
+ 23 .stdout_dev   0000000b  00000000  00000000  0001378d  2**0
                   CONTENTS, READONLY
- 24 .sopc_system_name 0000000b  00000000  00000000  000137bc  2**0
+ 24 .sopc_system_name 0000000b  00000000  00000000  00013798  2**0
                   CONTENTS, READONLY
- 25 .quartus_project_dir 00000045  00000000  00000000  000137c7  2**0
+ 25 .quartus_project_dir 00000045  00000000  00000000  000137a3  2**0
                   CONTENTS, READONLY
- 26 .jdi          0000eeef  00000000  00000000  0001380c  2**0
+ 26 .jdi          0000eeef  00000000  00000000  000137e8  2**0
                   CONTENTS, READONLY
- 27 .sopcinfo     000da3ce  00000000  00000000  000226fb  2**0
+ 27 .sopcinfo     000da3ce  00000000  00000000  000226d7  2**0
                   CONTENTS, READONLY
 SYMBOL TABLE:
 02000000 l    d  .entry	00000000 .entry
@@ -95,7 +95,7 @@ SYMBOL TABLE:
 020001d0 l       .text	00000000 alt_after_alt_main
 00000000 l    df *ABS*	00000000 alt_irq_handler.c
 00000000 l    df *ABS*	00000000 alt_instruction_exception_entry.c
-00000000 l    df *ABS*	00000000 hello_world_small.c
+00000000 l    df *ABS*	00000000 proc1.c
 02001960 l     O .bss	00012c00 image_buffer.3171
 00000000 l    df *ABS*	00000000 printf.c
 00000000 l    df *ABS*	00000000 putchar.c
