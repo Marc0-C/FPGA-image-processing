@@ -18,8 +18,8 @@ int main()
   printf("Processor 2\n");
   while(1){
 	    for (int i = 0; i < (320*240); i++) {
-	    	//IOWR(PIX_BUFF_ADDR_BASE, 0, i);
-	        //IOWR(PIX_DATA_BASE, 0, IORD_8DIRECT(MAILBOX_BASE_PRINT, i)); // bit shift by 4 coz 8 bit value only have 4 bits colour
+	    	IOWR(PIX_BUFF_ADDR_BASE, 0, i);
+	        IOWR(PIX_DATA_BASE, 0, IORD_8DIRECT(MAILBOX_BASE_PRINT, i)); // bit shift by 4 coz 8 bit value only have 4 bits colour
 	    }
 	    frame++;
 	    if (frame%10==0){
