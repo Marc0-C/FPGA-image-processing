@@ -43,8 +43,12 @@ module top_level (
 	
 	
 );
-	wire [3:0] pixel_data;
-	wire [3:0] pixel_buff_out;
+	wire [3:0] pixel_data_R;
+	wire [3:0] pixel_data_G;
+	wire [3:0] pixel_data_B;
+	wire [3:0] pixel_buff_R_out;
+	wire [3:0] pixel_buff_G_out;
+	wire [3:0] pixel_buff_B_out;
 	wire [16:0] vga_adress;
 	wire [31:0] current_usec;
 	reg [16:0] buffer_wadrr;
@@ -104,7 +108,9 @@ module top_level (
         .sdram_ras_n                 (DRAM_RAS_N),
         .sdram_we_n                  (DRAM_WE_N),
         .pix_buff_addr_export_export (buffer_wadrr),
-        .pix_data_export_export      (pixel_data),
+        .pix_data_r_export_export    (pixel_data_R),
+		  .pix_data_g_export_export    (pixel_data_G),       //       pix_data_g_export.export
+        .pix_data_b_export_export    (pixel_data_B),
         .cam_ready_export_export     (GPIO[2]),  
 
         // --- SPI Connections ---
@@ -123,7 +129,9 @@ module top_level (
  
 	 vga_controller controller (
 		.VGA_CLK					(VGA_CLK),
-		.VGA_DATA				(pixel_buff_out),
+		.VGA_DATA_R				(pixel_buff_R_out),
+		.VGA_DATA_G				(pixel_buff_G_out),
+		.VGA_DATA_B				(pixel_buff_B_out),
 		.VGA_ADDR				(vga_adress),
 		.VGA_R					(VGA_R),
 		.VGA_G					(VGA_G),
@@ -132,15 +140,33 @@ module top_level (
 		.VGA_VS					(VGA_VS)
 	 );
 	 
-	 pixel_buffa buffa(
+	 pixel_buffa R(
 		.clock					(VGA_CLK),
-		.data						(pixel_data),
+		.data						(pixel_data_R),
 		.rdaddress				(vga_adress),
 		.wraddress				(buffer_wadrr),
 		.wren						(1'b1),
-		.q							(pixel_buff_out)
+		.q							(pixel_buff_R_out)
 	 );
 	
+	 pixel_buffa G(
+		.clock					(VGA_CLK),
+		.data						(pixel_data_G),
+		.rdaddress				(vga_adress),
+		.wraddress				(buffer_wadrr),
+		.wren						(1'b1),
+		.q							(pixel_buff_G_out)
+	 );
+	 
+	 pixel_buffa B(
+		.clock					(VGA_CLK),
+		.data						(pixel_data_B),
+		.rdaddress				(vga_adress),
+		.wraddress				(buffer_wadrr),
+		.wren						(1'b1),
+		.q							(pixel_buff_B_out)
+	 );
+
 	
 	usec_counter usec (
 		.clk(CLOCK_50),

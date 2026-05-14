@@ -70,8 +70,8 @@ alt_u8 gyro_config[CONFIG_LENGHT] = {
     POWER_CONTROL, 0x08};
 
 
-#define IM_SIZE (240 * 320)
-#define IM_SIZE_SMOL (120 * 160)
+#define IM_SIZE (240 * 320) * 3
+#define IM_SIZE_SMOL (120 * 160) * 3
 #define THRESHOLD 75 // for accelerometer rotation to rotate frames in quad mode
 
 void display_fps(int duration); // declare prototype above so no "implicit declaration" warnings, not needed but i dont like warnings
@@ -114,13 +114,13 @@ int main()
     alt_u8 readZ = READ_Z_AXIS;
 
     // camera stuff
-	alt_u8 cam_set = 22; // binary 0001 0110 cam settings
+	alt_u8 cam_set = 23; // binary 0001 0110 cam settings
 
 	alt_u8 image_buffer[IM_SIZE/2];
 	alt_u8 special_image[IM_SIZE/2];
-	int *flip_quad_image = &special_image+IM_SIZE_SMOL/2;
-	int *blur_quad_image = &special_image+IM_SIZE_SMOL;
-	int *edge_quad_image = &special_image+IM_SIZE_SMOL*3/2;
+	alt_u8 *flip_quad_image = &special_image+IM_SIZE_SMOL/2;
+	alt_u8 *blur_quad_image = &special_image+IM_SIZE_SMOL;
+	alt_u8 *edge_quad_image = &special_image+IM_SIZE_SMOL*3/2;
 
 	int start_time, end_time, duration;
 
@@ -137,7 +137,9 @@ int main()
 	// set them all 0 to init
 	for (int i=0; i<IM_SIZE; i++){
 		IOWR(PIX_BUFF_ADDR_BASE, 0, i);
-		IOWR(PIX_DATA_BASE, 0, 0);
+		IOWR(PIX_DATA_R_BASE, 0, 0);
+		IOWR(PIX_DATA_G_BASE, 0, 0);
+		IOWR(PIX_DATA_B_BASE, 0, 0);
 	}
 
 	// Set other 3 hex to blank since dont need them yet:
@@ -202,7 +204,7 @@ int main()
 		}*/
 
 		if (quad_mode) {
-			cam_set = 22; // default settings except downscaled & "settings changed" = true
+			cam_set = 23; // default settings except downscaled & "settings changed" = true
 
 			alt_avalon_spi_command(SPI_0_BASE, 1, 1, &cam_set, IM_SIZE_SMOL/2, image_buffer, 0);
 
@@ -349,7 +351,7 @@ int main()
 
 
 		} else { // SINGLE MODE
-			cam_set = 20; // default settings except "settings changed" = true
+			cam_set = 21; // default settings except "settings changed" = true
 
 			alt_avalon_spi_command(SPI_0_BASE, 1, 1, &cam_set, IM_SIZE/2, image_buffer, 0);
 
@@ -392,7 +394,7 @@ int main()
 }
 
 void display_img(int width, int height, int startx, int starty, alt_u8 *buffer) {
-    alt_u8 *img = buffer;
+    alt_u8 *pix = buffer;
 
     // only for debugging, weird black pixel check value of certain adresses
     //printf("TL: %d\n", buffer[0] >> 4);
@@ -400,21 +402,27 @@ void display_img(int width, int height, int startx, int starty, alt_u8 *buffer) 
     //printf("BL: %d\n", buffer[(height - 1) * width] >> 4);
     //printf("BR: %d\n", buffer[width * height - 1] >> 4);
 
-    alt_u8 pix;
     for (int i = 0; i < height; i++) {
         for (int j = 0; j < width/2; j++) {
             int screen_x = startx + 2*j;
             int screen_y = starty + i;
 
-            pix = img[i * width/2 + j-1];
-
             IOWR(PIX_BUFF_ADDR_BASE, 0, (screen_y * 320) + screen_x);
-            IOWR(PIX_DATA_BASE, 0, pix >> 4); // bit shift by 4 coz 8 bit value only have 4 bits colour
+            IOWR(PIX_DATA_R_BASE, 0, *pix & 0xF);
+            IOWR(PIX_DATA_G_BASE, 0, (*pix >> 4) & 0xF);
 
-            IOWR(PIX_BUFF_ADDR_BASE, 0, (screen_y * 320) + screen_x+1);
-            IOWR(PIX_DATA_BASE, 0, pix); // bit shift by 4 coz 8 bit value only have 4 bits colour
+            pix++;
 
+			IOWR(PIX_DATA_B_BASE, 0, *pix & 0xF);
+			IOWR(PIX_BUFF_ADDR_BASE, 0, (screen_y * 320) + screen_x+1);
+			IOWR(PIX_DATA_R_BASE, 0, (*pix >> 4) & 0xF);
 
+			pix++;
+
+			IOWR(PIX_DATA_G_BASE, 0, *pix & 0xF);
+			IOWR(PIX_DATA_B_BASE, 0, (*pix >> 4) & 0xF);
+
+			pix++;
         }
     }
 }
