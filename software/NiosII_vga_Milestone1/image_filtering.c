@@ -35,11 +35,13 @@ void blur(alt_u8 image_data[], alt_u8 image_return[], int size){
 	im_width >>= size + 1;
 	im_height >>= size;
 
-	int sumL;
-	int sumR;
+	int sumL[3];
+	int sumR[3];
 	int sumCentL;
 	int sumCentR;
-	int sums[4];
+	int sumsR[4];
+	int sumsG[4];
+	int sumsB[4];
 
 	alt_u8 *top;
 	alt_u8 *mid;
@@ -50,43 +52,81 @@ void blur(alt_u8 image_data[], alt_u8 image_return[], int size){
 		for (int j = 0; j < im_width; j++){
 
 			if (j == 0){
-				mid = &image_data[i*im_width];
+				mid = &image_data[3*(i*im_width)];
 				if (i == 0){
 					top = mid;
-					bot = &image_data[(i+1)*im_width];
+					bot = &image_data[3*((i+1)*im_width)];
 				} else if (i == im_height - 1) {
-					top = &image_data[(i-1)*im_width];
+					top = &image_data[3*((i-1)*im_width)];
 					bot = mid;
 				} else {
-					top = &image_data[(i-1)*im_width];
-					bot = &image_data[(i+1)*im_width];
+					top = &image_data[3*((i-1)*im_width)];
+					bot = &image_data[3*((i+1)*im_width)];
 				}
 
-				sumCentL = (*top >> 4) + (*mid >> 4) + (*bot >> 4);
-				sumCentR = (*top & 0x0F) + (*mid & 0x0F) + (*bot & 0x0F);
-				sums[1] = sumCentL;
-				sums[2] = sumCentL;
-				sums[3] = sumCentR;
+				sumCentL = (top[0] & 0x0F) + (mid[0] & 0x0F) + (bot[0] & 0x0F);
+				sumCentR = (top[1] >> 4) + (mid[1] >> 4) + (bot[1] >> 4);
+				sumsR[1] = sumCentL;
+				sumsR[2] = sumCentL;
+				sumsR[3] = sumCentR;
+
+				sumCentL = (top[0] >> 4) + (mid[0] >> 4) + (bot[0] >> 4);
+				sumCentR = (top[2] & 0x0F) + (mid[2] & 0x0F) + (bot[2] & 0x0F);
+				sumsG[1] = sumCentL;
+				sumsG[2] = sumCentL;
+				sumsG[3] = sumCentR;
+
+				sumCentL = (top[1] & 0x0F) + (mid[1] & 0x0F) + (bot[1] & 0x0F);
+				sumCentR = (top[2] >> 4) + (mid[2] >> 4) + (bot[2] >> 4);
+				sumsB[1] = sumCentL;
+				sumsB[2] = sumCentL;
+				sumsB[3] = sumCentR;
 			}
 
-			sumL = sums[1] + sums[2] + sums[3];
-			sums[0] = sums[2];
-			sums[1] = sums[3];
+			sumL[0] = sumsR[1] + sumsR[2] + sumsR[3];
+			sumsR[0] = sumsR[2];
+			sumsR[1] = sumsR[3];
+
+			sumL[1] = sumsG[1] + sumsG[2] + sumsG[3];
+			sumsG[0] = sumsG[2];
+			sumsG[1] = sumsG[3];
+
+			sumL[2] = sumsB[1] + sumsB[2] + sumsB[3];
+			sumsB[0] = sumsB[2];
+			sumsB[1] = sumsB[3];
 
 			if (j != im_width-1) {
-				top++;
-				mid++;
-				bot++;
-				sumCentL = (*top >> 4) + (*mid >> 4) + (*bot >> 4);
-				sumCentR = (*top & 0x0F) + (*mid & 0x0F) + (*bot & 0x0F);
-				sums[2] = sumCentL;
-				sums[3] = sumCentR;
-			} else sums[2] = sums[3];
+				top += 3;
+				mid += 3;
+				bot += 3;
+				sumCentL = (top[0] & 0x0F) + (mid[0] & 0x0F) + (bot[0] & 0x0F);
+				sumCentR = (top[1] >> 4) + (mid[1] >> 4) + (bot[1] >> 4);
+				sumsR[2] = sumCentL;
+				sumsR[3] = sumCentR;
 
-			sumR = sums[0] + sums[1] + sums[2];
+				sumCentL = (top[0] >> 4) + (mid[0] >> 4) + (bot[0] >> 4);
+				sumCentR = (top[2] & 0x0F) + (mid[2] & 0x0F) + (bot[2] & 0x0F);
+				sumsG[2] = sumCentL;
+				sumsG[3] = sumCentR;
+
+				sumCentL = (top[1] & 0x0F) + (mid[1] & 0x0F) + (bot[1] & 0x0F);
+				sumCentR = (top[2] >> 4) + (mid[2] >> 4) + (bot[2] >> 4);
+				sumsB[2] = sumCentL;
+				sumsB[3] = sumCentR;
+			} else {
+				sumsR[2] = sumsR[3];
+				sumsG[2] = sumsG[3];
+				sumsB[2] = sumsB[3];
+			}
+
+			sumR[0] = sumsR[0] + sumsR[1] + sumsR[2];
+			sumR[1] = sumsG[0] + sumsG[1] + sumsG[2];
+			sumR[2] = sumsB[0] + sumsB[1] + sumsB[2];
 
 
-			image_return[i*im_width+j] = ((sumL / 9)<<4) + ((sumR / 9) & 0x0F);
+			image_return[3*(i*im_width+j)] = ((sumL[1] / 9)<<4) + ((sumL[0] / 9) & 0x0F);
+			image_return[3*(i*im_width+j)+1] = ((sumR[0] / 9)<<4) + ((sumL[2] / 9) & 0x0F);
+			image_return[3*(i*im_width+j)+2] = ((sumL[2] / 9)<<4) + ((sumL[1] / 9) & 0x0F);
 		}
 	}
 
