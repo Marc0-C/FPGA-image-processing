@@ -93,6 +93,8 @@ void key_isr(void* context)
     IOWR_ALTERA_AVALON_PIO_EDGE_CAP(KEY_BASE, 0);
     //set wire irq to 0
     quadmode = !quadmode;
+
+
     keypressed = 1;
 }
 
@@ -159,27 +161,35 @@ int main() {
     		if (yData > 75) {
     			rotation = (rotation + 1) % 4;
     			altera_avalon_mutex_lock(mutex, 1);
+
     			IOWR_8DIRECT(SHARED_MAILBOX_BASE, - 2 , rotation); //set rotation in sdram
     			IOWR_8DIRECT(SHARED_MAILBOX_BASE, - 5 , 1); //set rotation contol to 1
-    			altera_avalon_mutex_unlock(mutex);
+
     			//send interrupt to proc0
         	    IOWR_ALTERA_AVALON_PIO_DATA(IRQ_FROM_PROC1_BASE , 0x1);
         	    printf("sent rotation interrupt \n");
         	    IOWR_ALTERA_AVALON_PIO_DATA(IRQ_FROM_PROC1_BASE, 0);
-    		}else if (yData < -75) {
+
+        	    altera_avalon_mutex_unlock(mutex);
+
+    		}
+    		else if (yData < -75) {
     			rotation = (rotation + 3) % 4; // -1 mod 4
     			altera_avalon_mutex_lock(mutex, 1);
     			IOWR_8DIRECT(SHARED_MAILBOX_BASE, - 2 , rotation);
     			IOWR_8DIRECT(SHARED_MAILBOX_BASE, - 5 , 1); //set rotation contol to 1
-    			altera_avalon_mutex_unlock(mutex);
+
     			//send interrupt to proc0
         	    IOWR_ALTERA_AVALON_PIO_DATA(IRQ_FROM_PROC1_BASE , 0x1);
         	    printf("sent rotation interrupt \n");
         	    IOWR_ALTERA_AVALON_PIO_DATA(IRQ_FROM_PROC1_BASE, 0);
+        	    altera_avalon_mutex_unlock(mutex);
     		}
     	    cam_set = 18; // default settings except downscaled & "settings changed" = true
     	    alt_avalon_spi_command(SPI_0_BASE, 1, 1, &cam_set, IM_SIZEsmll, image_buffer, 0);
-    	}else{
+
+    	}
+    	else {
     		cam_set = 16;
     		alt_avalon_spi_command(SPI_0_BASE, 1, 1, &cam_set, IM_SIZE, image_buffer, 0);
     	}
@@ -188,12 +198,16 @@ int main() {
         //altera_avalon_mutex_lock(mutex, 1);
         //printf("just locked mutex \n");
         //if (altera_avalon_mutex_is_mine(mutex) || altera_avalon_mutex_lock(mutex, 1) == 0) {
-        for (int i = 0; i < IM_SIZE; i++) {
+
+    	altera_avalon_mutex_lock(mutex, 1);
+    	for (int i = 0; i < IM_SIZE; i++) {
         	//#define IOWR_8DIRECT(BASE, OFFSET, DATA)
 
             IOWR_8DIRECT(SHARED_MAILBOX_BASE, i, image_buffer[i]);
+
             // each image_buffer[i] is a byte, each 320 bytes is a row
         }
+        altera_avalon_mutex_unlock(mutex);
         framenum += 1;
         //altera_avalon_mutex_unlock(mutex);
         //printf("just unlocked mutex \n");

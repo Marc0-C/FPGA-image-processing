@@ -78,10 +78,11 @@ int main() {
     int start_time, end_time, duration;
 
     static uint8_t processing_buffer[IM_SIZE];
-	static uint8_t special_image[IM_SIZE];
-	int *flip_quad_image = (int*)(special_image) + IM_SIZEsmll;
-	int *blur_quad_image = (int*)(special_image) + IM_SIZEsmll * 2;
-	int *edge_quad_image = (int*)(special_image) + IM_SIZEsmll * 3;
+    static uint8_t special_image[IM_SIZE];
+
+    uint8_t *flip_quad_image = special_image + IM_SIZEsmll;
+    uint8_t *blur_quad_image = special_image + IM_SIZEsmll * 2;
+    uint8_t *edge_quad_image = special_image + IM_SIZEsmll * 3;
 
     // Initialise Displays
     IOWR_32DIRECT(HEX2_BASE, 0, 0xFFFFFF);
@@ -105,26 +106,28 @@ int main() {
     	start_time = IORD_ALTERA_AVALON_PIO_DATA(USEC_COUNTER_PIO_BASE);
 
     	if (flagg == 1){ // interrupt has been called, check what caused it: key, switch or rotation
+    		altera_avalon_mutex_lock(mutex, 1);
+
     		if(IORD_8DIRECT(SHARED_MAILBOX_BASE, - 4) == 1){ // if interrupt caused by key
 
-    			altera_avalon_mutex_lock(mutex, 1);
     			//quad_mode = IORD_ALTERA_AVALON_PIO_DATA(SHARED_MAILBOX_BASE-1); // save key value
     			quad_mode = IORD_8DIRECT(SHARED_MAILBOX_BASE, -1);
     			printf("key interrupt received: %d \n", quad_mode);
     			//IOWR_ALTERA_AVALON_PIO_DATA(SHARED_MAILBOX_BASE-4, 0); // set key control to 0
     			IOWR_8DIRECT(SHARED_MAILBOX_BASE, - 4 , 0);
-    			altera_avalon_mutex_unlock(mutex);
+
     		}
 
     		if(IORD_8DIRECT(SHARED_MAILBOX_BASE,-5) == 1){ // interrupt caused by rotation
-    			altera_avalon_mutex_lock(mutex, 1);
+
     			rot = IORD_8DIRECT(SHARED_MAILBOX_BASE,-2); //save rotation value
     			printf("rotation interrupt received: %d \n", rot);
     			IOWR_8DIRECT(SHARED_MAILBOX_BASE, -5, 0); // set rotaiton control to 0
-    			altera_avalon_mutex_unlock(mutex);
+
     		}
 
     		flagg = 0;
+    		altera_avalon_mutex_unlock(mutex);
     	}
 
     	int sw = IORD_ALTERA_AVALON_PIO_DATA(SW_BASE);
