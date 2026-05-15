@@ -1,7 +1,17 @@
 #include "io.h"
 
-void flip_image(alt_u8 image_data[], alt_u8 image_return[], int axis, int size){
-
+/*
+ * flip_image is used to flip an image along both the horizontal and vertical directions.
+ *
+ * @param alt_u8 image_data[] - pointer to start of array holing the image data
+ * @param alt_u8 image_return[] - pointer to start of array to write the processed data
+ * @param int size - size of input image
+ * 					 	0: full size
+ * 					 	1: quater size
+ *
+ * @return - None
+ */
+void flip_image(alt_u8 image_data[], alt_u8 image_return[], int size){
 	int im_width = 320;
 	int im_height = 240;
 
@@ -27,6 +37,17 @@ void flip_image(alt_u8 image_data[], alt_u8 image_return[], int axis, int size){
 	return;
 }
 
+/*
+ * blur is used to blur an image using a 3x3 kernal.
+ *
+ * @param alt_u8 image_data[] - pointer to start of array holing the image data
+ * @param alt_u8 image_return[] - pointer to start of array to write the processed data
+ * @param int size - size of input image
+ * 					 	0: full size
+ * 					 	1: quater size
+ *
+ * @return - None
+ */
 void blur(alt_u8 image_data[], alt_u8 image_return[], int size){
 
 	int im_width = 320;
@@ -134,15 +155,23 @@ void blur(alt_u8 image_data[], alt_u8 image_return[], int size){
 	return;
 }
 
+/*
+ * edge_detector applies sobel filters in the x and y directions to locate the edges in an image
+ *
+ * @param alt_u8 image_data[] - pointer to start of array holing the image data
+ * @param alt_u8 image_return[] - pointer to start of array to write the processed data
+ * @param int size - size of input image
+ * 					 	0: full size
+ * 					 	1: quater size
+ *
+ * @return - None
+ */
 void edge_detector(alt_u8 image_data[], alt_u8 image_return[], int size){
 	int im_width = 320;
 	int im_height = 240;
 
 	im_width >>= size + 1;
 	im_height >>= size;
-
-
-	float pixL, pixR;
 
 	int g_xL;
 	int g_xR;
