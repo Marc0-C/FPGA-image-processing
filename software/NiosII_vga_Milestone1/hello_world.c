@@ -114,9 +114,20 @@ int main()
     alt_u8 readZ = READ_Z_AXIS;
 
     // camera stuff
-	alt_u8 cam_set = 23; // binary 0001 0110 cam settings
+	alt_u8 cam_set = 21; // binary 0001 0110 cam settings
 
+
+	static alt_u8 dummy_buffer[IM_SIZE/2]; // for writing junk info into when changing cam settings
+	int lastQuadMode = 0; // keep track of if mode changes, to update cam settings
+
+
+	// buffer to hold SPI data before moving to SDRAM
 	alt_u8 image_buffer[IM_SIZE/2];
+
+
+	alt_avalon_spi_command(SPI_0_BASE, 1, 1, &cam_set, IM_SIZE/2, image_buffer, 0);
+
+
 	alt_u8 special_image[IM_SIZE/2];
 	alt_u8 *flip_quad_image = &special_image+IM_SIZE_SMOL/2;
 	alt_u8 *blur_quad_image = &special_image+IM_SIZE_SMOL;
@@ -203,10 +214,39 @@ int main()
 			}
 		}*/
 
+
+		if (quad_mode != lastQuadMode) {
+			printf("quadmode changed?\n");
+
+			if (quad_mode == 1){
+				lastQuadMode = 1;
+
+				cam_set = 23; // default settings except downscaled & "settings changed" = true
+
+				while (IORD_ALTERA_AVALON_PIO_DATA(CAM_READY_BASE) == 0) {
+					printf("Not ready yet\n");
+				}
+
+				alt_avalon_spi_command(SPI_0_BASE, 1, 1, &cam_set, IM_SIZE_SMOL/2, dummy_buffer, 0);
+			}
+			else {
+				lastQuadMode = 0;
+				cam_set = 21; // default settings except "settings changed" = true
+
+				while (IORD_ALTERA_AVALON_PIO_DATA(CAM_READY_BASE) == 0) {
+					printf("Not ready yet\n");
+				}
+
+				alt_avalon_spi_command(SPI_0_BASE, 1, 1, &cam_set, IM_SIZE/2, dummy_buffer, 0);
+			}
+		}
+
+
+
 		if (quad_mode) {
 			cam_set = 23; // default settings except downscaled & "settings changed" = true
 
-			alt_avalon_spi_command(SPI_0_BASE, 1, 1, &cam_set, IM_SIZE_SMOL/2, image_buffer, 0);
+			alt_avalon_spi_command(SPI_0_BASE, 1, 0, NULL, IM_SIZE_SMOL/2, image_buffer, 0);
 
 			// ROTATE with Accelerometer Y Axis.
 			// Y-axis rotation control
@@ -353,7 +393,7 @@ int main()
 		} else { // SINGLE MODE
 			cam_set = 21; // default settings except "settings changed" = true
 
-			alt_avalon_spi_command(SPI_0_BASE, 1, 1, &cam_set, IM_SIZE/2, image_buffer, 0);
+			alt_avalon_spi_command(SPI_0_BASE, 1, 0, NULL, IM_SIZE/2, image_buffer, 0);
 
 			if (sw_top_left == 0) {
 				// display image 0
@@ -406,23 +446,29 @@ void display_img(int width, int height, int startx, int starty, alt_u8 *buffer) 
         for (int j = width/2-1; j >= 0; j--) {
             int screen_x = startx + 2*j;
             int screen_y = starty + i;
+            alt_u8 l1, h1, l2;
+            alt_u8 h2, l3, h3;
 
-            IOWR(PIX_BUFF_ADDR_BASE, 0, (screen_y * 320) + screen_x);
-            IOWR(PIX_DATA_R_BASE, 0, *pix & 0xF);
-            IOWR(PIX_DATA_G_BASE, 0, (*pix >> 4) & 0xF);
-
+            l1 = *pix & 0xF;
+            h1 = (*pix >> 4) & 0xF;
+            pix++;
+            l2 = *pix & 0xF;
+            h2 = (*pix >> 4) & 0xF;
+            pix++;
+            l3 = *pix & 0xF;
+            h3 = (*pix >> 4) & 0xF;
             pix++;
 
-			IOWR(PIX_DATA_B_BASE, 0, *pix & 0xF);
-			IOWR(PIX_BUFF_ADDR_BASE, 0, (screen_y * 320) + screen_x-1);
-			IOWR(PIX_DATA_R_BASE, 0, (*pix >> 4) & 0xF);
+            IOWR(PIX_BUFF_ADDR_BASE, 0, (screen_y * 320) + screen_x-1);
+            IOWR(PIX_DATA_R_BASE, 0, h1);//h1
+            IOWR(PIX_DATA_G_BASE, 0, l1);//#l1
+			IOWR(PIX_DATA_B_BASE, 0, h2);//h2
 
-			pix++;
+			IOWR(PIX_BUFF_ADDR_BASE, 0, (screen_y * 320) + screen_x);
+			IOWR(PIX_DATA_R_BASE, 0, l2);//l2
+			IOWR(PIX_DATA_G_BASE, 0, h3);
+			IOWR(PIX_DATA_B_BASE, 0, l3);
 
-			IOWR(PIX_DATA_G_BASE, 0, *pix & 0xF);
-			IOWR(PIX_DATA_B_BASE, 0, (*pix >> 4) & 0xF);
-
-			pix++;
         }
     }
 }
