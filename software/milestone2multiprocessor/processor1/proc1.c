@@ -123,6 +123,12 @@ int main() {
     static uint8_t image_buffer[IM_SIZE];
 
     camSet = 21; // default settings except "settings changed" = true
+
+    while (IORD_ALTERA_AVALON_PIO_DATA(CAM_READY_BASE) == 0) {
+		// For debugging
+		printf("Not ready to change settings yet\n");
+	}
+
     alt_avalon_spi_command(SPI_0_BASE, 1, 1, &camSet, IM_SIZE, image_buffer, 0);
 
     // Clear edge capture register
