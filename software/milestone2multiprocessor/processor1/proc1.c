@@ -108,6 +108,7 @@ int main() {
     IOWR_ALTERA_AVALON_PIO_DATA(SHARED_MAILBOX_BASE-4, 0); 
     IOWR_ALTERA_AVALON_PIO_DATA(SHARED_MAILBOX_BASE-5, 0);
     IOWR_ALTERA_AVALON_PIO_DATA(SHARED_MAILBOX_BASE-6, 0);
+    IOWR_ALTERA_AVALON_PIO_DATA(SHARED_MAILBOX_BASE-10, 0);
 
     // gyro
     alt_u8 gyro_data_out;
@@ -115,10 +116,20 @@ int main() {
     alt_u8 readY = READ_Y_AXIS;
     alt_16 yData;
 
-    alt_u8 cam_set = 0;
+    alt_u8 cam_set = 16; // camera settings var
 
-    // Buffer to hold SPI data before moving to SDRAM
-    static uint8_t imageBuffer[IM_SIZE];
+
+	static uint8_t dummyBuffer[IM_SIZE]; // for writing junk info into when changing cam settings
+	int lastQuadMode = 0; // keep track of if mode changes, to update cam settings
+
+
+	// buffer to hold SPI data before moving to SDRAM
+	static uint8_t imageBuffer[IM_SIZE];
+	int framenum = 0;
+
+	cam_set = 16; // default settings except "settings changed" = true
+	alt_avalon_spi_command(SPI_0_BASE, 1, 1, &cam_set, IM_SIZE, imageBuffer, 0);
+
    
     // clear edge capture register
     IOWR_ALTERA_AVALON_PIO_EDGE_CAP(KEY_BASE, 0);
@@ -136,6 +147,34 @@ int main() {
     while (1) {
         // Read Gyro (Processor 1 owns SPI)
 		alt_avalon_spi_command(SPI_0_BASE, 0, 1, &readY, 2, (alt_u8*)&yData, 0);
+
+
+		if (quadmode != lastQuadMode) {
+			printf("quadmode changed?\n");
+
+			if (quadmode == 1){
+				lastQuadMode = 1;
+
+				cam_set = 18; // default settings except downscaled & "settings changed" = true
+
+				while (IORD_ALTERA_AVALON_PIO_DATA(CAM_READY_BASE) == 0) {
+					printf("Not ready yet\n");
+				}
+
+				alt_avalon_spi_command(SPI_0_BASE, 1, 1, &cam_set, IM_SIZEsmll, dummyBuffer, 0);
+			}
+			else {
+				lastQuadMode = 0;
+				cam_set = 16; // default settings except "settings changed" = true
+
+				while (IORD_ALTERA_AVALON_PIO_DATA(CAM_READY_BASE) == 0) {
+					printf("Not ready yet\n");
+				}
+
+				alt_avalon_spi_command(SPI_0_BASE, 1, 1, &cam_set, IM_SIZE, dummyBuffer, 0);
+			}
+		}
+
 
     	if (quadmode == 1){// if quad mode then accelerometer can send interrupts
     		if (yData > 75) {
@@ -161,18 +200,20 @@ int main() {
         	    printf("sent rotation interrupt \n");
         	    IOWR_ALTERA_AVALON_PIO_DATA(IRQ_FROM_PROC1_BASE, 0);
     		}
-            // Default settings except downscaled & "settings changed" = true
-    	    cam_set = 18; 
-    	    alt_avalon_spi_command(SPI_0_BASE, 1, 1, &cam_set, IM_SIZEsmll, imageBuffer, 0);
+    	    alt_avalon_spi_command(SPI_0_BASE, 1, 0, NULL, IM_SIZEsmll, imageBuffer, 0);
     	}else{
-    		cam_set = 16;
-    		alt_avalon_spi_command(SPI_0_BASE, 1, 1, &cam_set, IM_SIZE, imageBuffer, 0);
+
+    		alt_avalon_spi_command(SPI_0_BASE, 1, 0, NULL, IM_SIZE, imageBuffer, 0);
     	}
 
         // Copy frame to shared mailbox
         for (int i = 0; i < IM_SIZE; i++) {
             IOWR_8DIRECT(SHARED_MAILBOX_BASE, i, imageBuffer[i]);
         }
+
+		altera_avalon_mutex_lock(mutex, 1);
+		IOWR_8DIRECT(SHARED_MAILBOX_BASE, - 10 , 1);
+   	    altera_avalon_mutex_unlock(mutex);
 
     	if (keyPressed == 1){
     		altera_avalon_mutex_lock(mutex, 1);

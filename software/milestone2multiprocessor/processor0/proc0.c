@@ -66,7 +66,8 @@ void edge_detector(alt_u8 *input_buffer, alt_u8 *output_buffer, int size);
 int main() {
     printf("processor0\n");
     alt_mutex_dev* mutex = altera_avalon_mutex_open(MUTEX_0_NAME);
-    int start_time, end_time, duration;
+    int start_time, duration, end_time, end_time_prev;
+
 
     static uint8_t processing_buffer[IM_SIZE];
     static uint8_t special_image[IM_SIZE];
@@ -88,159 +89,181 @@ int main() {
     alt_ic_isr_register(IRQ_TO_PROC0_IRQ_INTERRUPT_CONTROLLER_ID, IRQ_TO_PROC0_IRQ, proc1_isr,NULL,0x0 );
 
     while (1) {
-    	start_time = IORD_ALTERA_AVALON_PIO_DATA(USEC_COUNTER_PIO_BASE);
 
-    	if (interruptFlag == 1){ // interrupt has been called, check what caused it: key or rotation
+    	int timeFlag = 0;
+    	int calculatingTime = 0;
+    	altera_avalon_mutex_lock(mutex, 1);
+    	timeFlag = IORD_8DIRECT(SHARED_MAILBOX_BASE, - 10);
+    	altera_avalon_mutex_unlock(mutex);
+
+    	if (timeFlag == 1){
+    		//end_time_prev = IORD_ALTERA_AVALON_PIO_DATA(USEC_COUNTER_PIO_BASE);
+
     		altera_avalon_mutex_lock(mutex, 1);
-    		// If interrupt caused by key
-    		if(IORD_8DIRECT(SHARED_MAILBOX_BASE, - 4) == 1){
-    			// Save quadmode value
-    			quadMode = IORD_8DIRECT(SHARED_MAILBOX_BASE, -1);
-    			printf("key interrupt received: %d \n", quadMode);
-    			// Set key interrupt flag value to 0
-    			IOWR_8DIRECT(SHARED_MAILBOX_BASE, - 4 , 0);
-    		}
-    		// If interrupt caused by rotation
-    		if(IORD_8DIRECT(SHARED_MAILBOX_BASE,-5) == 1){
-    			// Save rotation value
-    			rot = IORD_8DIRECT(SHARED_MAILBOX_BASE,-2);
-    			printf("rotation interrupt received: %d \n", rot);
-    			// Set rotaiton interrupt flag to 0
-    			IOWR_8DIRECT(SHARED_MAILBOX_BASE, -5, 0);
-    		}
+			IOWR_8DIRECT(SHARED_MAILBOX_BASE, - 10, 0);
+			altera_avalon_mutex_unlock(mutex);
 
-    		interruptFlag = 0;
-    		altera_avalon_mutex_unlock(mutex);
+
+
+			if (interruptFlag == 1){ // interrupt has been called, check what caused it: key or rotation
+				altera_avalon_mutex_lock(mutex, 1);
+				// If interrupt caused by key
+				if(IORD_8DIRECT(SHARED_MAILBOX_BASE, - 4) == 1){
+					// Save quadmode value
+					quadMode = IORD_8DIRECT(SHARED_MAILBOX_BASE, -1);
+					printf("key interrupt received: %d \n", quadMode);
+					// Set key interrupt flag value to 0
+					IOWR_8DIRECT(SHARED_MAILBOX_BASE, - 4 , 0);
+				}
+				// If interrupt caused by rotation
+				if(IORD_8DIRECT(SHARED_MAILBOX_BASE,-5) == 1){
+					// Save rotation value
+					rot = IORD_8DIRECT(SHARED_MAILBOX_BASE,-2);
+					printf("rotation interrupt received: %d \n", rot);
+					// Set rotaiton interrupt flag to 0
+					IOWR_8DIRECT(SHARED_MAILBOX_BASE, -5, 0);
+				}
+
+				interruptFlag = 0;
+				altera_avalon_mutex_unlock(mutex);
+			}
+
+			int sw = IORD_ALTERA_AVALON_PIO_DATA(SW_BASE);
+
+			int topLeft = (sw >> 0) & 0x3;  // SW[1:0]
+			int topRight = (sw >> 2) & 0x3;  // SW[3:2]
+			int bottomLeft = (sw >> 4) & 0x3;  // SW[5:4]
+			int bottomRight = (sw >> 6) & 0x3;  // SW[7:6]
+
+
+			// Det sdram frame to buffer
+			for (int i = 0; i < IM_SIZE; i++) {
+				processing_buffer[i] = IORD_8DIRECT(SHARED_MAILBOX_BASE, i);
+			 }
+
+			if(quadMode == 0){
+				// Apply switch functionality for not quadrature
+				if (topLeft == 0) {
+					display_img(320, 240, 0, 0, processing_buffer);
+				}
+				if (topLeft == 1) {
+					flip_image(processing_buffer, special_image, 2, 0);
+					display_img(320, 240, 0, 0, special_image);
+				}
+				if (topLeft == 2) {
+					blur(processing_buffer, special_image, 0);
+					display_img(320, 240, 0, 0, special_image);
+				}
+				if (topLeft == 3) {
+					edge_detector(processing_buffer, special_image, 0);
+					display_img(320, 240, 0, 0, special_image);
+				}
+				// For quad mode on
+			} else {
+				// apply rotation mapping
+				if (rot == 0) {
+					rotTopLeft     = topLeft;
+					rotTopRight    = topRight;
+					rotBottomLeft  = bottomLeft;
+					rotBottomRight = bottomRight;
+				}
+				else if (rot == 1) {
+					rotTopLeft     = bottomLeft;
+					rotTopRight    = topLeft;
+					rotBottomLeft  = bottomRight;
+					rotBottomRight = topRight;
+				}
+				else if (rot == 2) {
+					rotTopLeft     = bottomRight;
+					rotTopRight    = bottomLeft;
+					rotBottomLeft  = topRight;
+					rotBottomRight = topLeft;
+				}
+				else if (rot == 3) {
+					rotTopLeft     = topRight;
+					rotTopRight    = bottomRight;
+					rotBottomLeft  = topLeft;
+					rotBottomRight = bottomLeft;
+				}
+
+				if (rotTopLeft == 1 || rotTopRight == 1 || rotBottomLeft == 1 || rotBottomRight == 1) {
+					flip_image(processing_buffer, flip_quad_image, 2, 1);
+				}
+				if (rotTopLeft == 2 || rotTopRight == 2 || rotBottomLeft == 2 || rotBottomRight == 2) {
+					blur(processing_buffer, blur_quad_image, 1);
+				}
+				if (rotTopLeft == 3 || rotTopRight == 3 || rotBottomLeft == 3 || rotBottomRight == 3) {
+					edge_detector(processing_buffer, edge_quad_image, 1);
+				}
+
+				// Display Top Left
+				if (rotTopLeft == 0) {
+					display_img(160, 120, 0, 0, processing_buffer);
+				}
+				if (rotTopLeft == 1) {
+					display_img(160, 120, 0, 0, flip_quad_image);
+				}
+				if (rotTopLeft == 2) {
+					display_img(160, 120, 0, 0, blur_quad_image);
+				}
+				if (rotTopLeft == 3) {
+					display_img(160, 120, 0, 0, edge_quad_image);
+				}
+
+				// Display Top Right
+				if (rotTopRight == 0) {
+					display_img(160, 120, 160, 0, processing_buffer);
+				}
+				if (rotTopRight == 1) {
+					display_img(160, 120, 160, 0, flip_quad_image); }
+				if (rotTopRight == 2) { display_img(160, 120, 160, 0, blur_quad_image);
+				}
+				if (rotTopRight == 3) {
+					display_img(160, 120, 160, 0, edge_quad_image);
+				}
+
+				// Display Bottom Left
+				if (rotBottomLeft == 0) {
+					display_img(160, 120, 0, 120, processing_buffer);
+				}
+				if (rotBottomLeft == 1) {
+					display_img(160, 120, 0, 120, flip_quad_image);
+				}
+				if (rotBottomLeft == 2) {
+					display_img(160, 120, 0, 120, blur_quad_image);
+				}
+				if (rotBottomLeft == 3) {
+					display_img(160, 120, 0, 120, edge_quad_image);
+				}
+
+				// 5 Display Bottom Right
+				if (rotBottomRight == 0) {
+					display_img(160, 120, 160, 120, processing_buffer);
+				}
+				if (rotBottomRight == 1) {
+					display_img(160, 120, 160, 120, flip_quad_image);
+				}
+				if (rotBottomRight == 2) {
+					display_img(160, 120, 160, 120, blur_quad_image);
+				}
+				if (rotBottomRight == 3) {
+					display_img(160, 120, 160, 120, edge_quad_image);
+				}
+
+			}
+
+			end_time = IORD_ALTERA_AVALON_PIO_DATA(USEC_COUNTER_PIO_BASE);
+			duration = end_time - start_time;
+
+			display_fps(duration);
+
+			start_time = IORD_ALTERA_AVALON_PIO_DATA(USEC_COUNTER_PIO_BASE);
+
+
+
     	}
 
-    	int sw = IORD_ALTERA_AVALON_PIO_DATA(SW_BASE);
 
-		int topLeft = (sw >> 0) & 0x3;  // SW[1:0]
-		int topRight = (sw >> 2) & 0x3;  // SW[3:2]
-		int bottomLeft = (sw >> 4) & 0x3;  // SW[5:4]
-		int bottomRight = (sw >> 6) & 0x3;  // SW[7:6]
-
-
-        // Det sdram frame to buffer
-        for (int i = 0; i < IM_SIZE; i++) {
-        	processing_buffer[i] = IORD_8DIRECT(SHARED_MAILBOX_BASE, i);
-		 }
-
-		if(quadMode == 0){
-			// Apply switch functionality for not quadrature
-			if (topLeft == 0) {
-				display_img(320, 240, 0, 0, processing_buffer);
-			}
-			if (topLeft == 1) {
-				flip_image(processing_buffer, special_image, 2, 0);
-				display_img(320, 240, 0, 0, special_image);
-			}
-			if (topLeft == 2) {
-				blur(processing_buffer, special_image, 0);
-				display_img(320, 240, 0, 0, special_image);
-			}
-			if (topLeft == 3) {
-				edge_detector(processing_buffer, special_image, 0);
-				display_img(320, 240, 0, 0, special_image);
-			}
-			// For quad mode on
-		} else {
-			// apply rotation mapping
-			if (rot == 0) {
-			    rotTopLeft     = topLeft;
-			    rotTopRight    = topRight;
-			    rotBottomLeft  = bottomLeft;
-			    rotBottomRight = bottomRight;
-			}
-			else if (rot == 1) {
-			    rotTopLeft     = bottomLeft;
-			    rotTopRight    = topLeft;
-			    rotBottomLeft  = bottomRight;
-			    rotBottomRight = topRight;
-			}
-			else if (rot == 2) {
-			    rotTopLeft     = bottomRight;
-			    rotTopRight    = bottomLeft;
-			    rotBottomLeft  = topRight;
-			    rotBottomRight = topLeft;
-			}
-			else if (rot == 3) {
-			    rotTopLeft     = topRight;
-			    rotTopRight    = bottomRight;
-			    rotBottomLeft  = topLeft;
-			    rotBottomRight = bottomLeft;
-			}
-
-			if (rotTopLeft == 1 || rotTopRight == 1 || rotBottomLeft == 1 || rotBottomRight == 1) {
-				flip_image(processing_buffer, flip_quad_image, 2, 1);
-			}
-			if (rotTopLeft == 2 || rotTopRight == 2 || rotBottomLeft == 2 || rotBottomRight == 2) {
-				blur(processing_buffer, blur_quad_image, 1);
-			}
-			if (rotTopLeft == 3 || rotTopRight == 3 || rotBottomLeft == 3 || rotBottomRight == 3) {
-				edge_detector(processing_buffer, edge_quad_image, 1);
-			}
-
-			// Display Top Left
-			if (rotTopLeft == 0) {
-				display_img(160, 120, 0, 0, processing_buffer);
-			}
-			if (rotTopLeft == 1) {
-				display_img(160, 120, 0, 0, flip_quad_image);
-			}
-			if (rotTopLeft == 2) {
-				display_img(160, 120, 0, 0, blur_quad_image);
-			}
-			if (rotTopLeft == 3) {
-				display_img(160, 120, 0, 0, edge_quad_image);
-			}
-
-			// Display Top Right
-			if (rotTopRight == 0) {
-				display_img(160, 120, 160, 0, processing_buffer);
-			}
-			if (rotTopRight == 1) {
-				display_img(160, 120, 160, 0, flip_quad_image); }
-			if (rotTopRight == 2) { display_img(160, 120, 160, 0, blur_quad_image);
-			}
-			if (rotTopRight == 3) {
-				display_img(160, 120, 160, 0, edge_quad_image);
-			}
-
-			// Display Bottom Left
-			if (rotBottomLeft == 0) {
-				display_img(160, 120, 0, 120, processing_buffer);
-			}
-			if (rotBottomLeft == 1) {
-				display_img(160, 120, 0, 120, flip_quad_image);
-			}
-			if (rotBottomLeft == 2) {
-				display_img(160, 120, 0, 120, blur_quad_image);
-			}
-			if (rotBottomLeft == 3) {
-				display_img(160, 120, 0, 120, edge_quad_image);
-			}
-
-			// 5 Display Bottom Right
-			if (rotBottomRight == 0) {
-				display_img(160, 120, 160, 120, processing_buffer);
-			}
-			if (rotBottomRight == 1) {
-				display_img(160, 120, 160, 120, flip_quad_image);
-			}
-			if (rotBottomRight == 2) {
-				display_img(160, 120, 160, 120, blur_quad_image);
-			}
-			if (rotBottomRight == 3) {
-				display_img(160, 120, 160, 120, edge_quad_image);
-			}
-
-		}
-
-        end_time = IORD_ALTERA_AVALON_PIO_DATA(USEC_COUNTER_PIO_BASE);
-
-        duration = end_time - start_time;
-        display_fps(duration);
     }
     return 0;
 }
@@ -256,7 +279,7 @@ void display_img(int width, int height, int startx, int starty, alt_u8 *processi
             int screen_y = starty + i;
 
             int location = (screen_y * 320) + screen_x;
-			int pixel = img[i * width + j - 1] >> 4;
+			int pixel = img[i * width + j] >> 4;
 			IOWR_8DIRECT(MAILBOX_BASE_PRINT, location , pixel);
 
         }
