@@ -1,3 +1,14 @@
+/*
+   Processor 0, original from M1, takes the frames stored in sdram by processor 1
+   Recieves inter-processor interrupts to check the flags in sdram for status of
+   quadmode and rotation, also checks switches.
+   Image processing, including flipping, blurring and edge detection are done here.
+   Processed frames are stored in another shared space in sdram with processor 2.
+*/
+// Created By : Team A06
+// Created Date: 15/05/2026
+// version = Final
+
 #include <stdio.h>
 #include "sys/alt_stdio.h"
 #include <stdint.h>
@@ -9,101 +20,77 @@
 #include <stdlib.h>
 #include "sys/alt_irq.h"
 
+// Shared Memory between processor0 and processor1
+#define SHARED_MAILBOX_BASE 0x029896A0
+// Actual mailbox starts at 0x02895460
+// 0x02895460 to 0x029896A0 is reserved for flags and other interprocessor data (excluding frames)
 
-#define SHARED_MAILBOX_BASE 0x029896A0	//actual mailbox starts at 0x02895460 but its reserved for flags
-
-
-// -1 KEY, -2 ROTATE, -3 SWITCH, -4,-5,-6: CONTROL key, rot and switch
+// Shared Memory between processor0 and processor2
 #define MAILBOX_BASE_PRINT 0x017A1220
 
 #define IM_SIZE ((240 * 320)*3/2)
-#define IM_SIZEsmll ((120 * 160)*3/2)
+#define IM_SIZE_QUAD ((120 * 160)*3/2)
 
 
 void display_fps(int duration);
-volatile int newframe = 0;
-volatile int flagg = 0;
-volatile int quad_mode = 0;
+volatile int interruptFlag = 0;
+volatile int quadMode = 0;
 int rot = 0;
 int sw = 0;
 
-int top_left = 0;
-int top_right = 0;
-int bottom_left = 0;
-int bottom_right = 0;
-int rot_top_left = 0;
-int rot_top_right = 0;
-int rot_bottom_left = 0;
-int rot_bottom_right = 0;
+int swTopLeft = 0;
+int swTopRight = 0;
+int swBottomLeft = 0;
+int swBottomRight = 0;
+int rotTopLeft = 0;
+int rotTopRight = 0;
+int rotBottomLeft = 0;
+int rotBottomRight = 0;
 
 
-
-
-// ISR function for KEY PRESSES
-void key_isr(void* context)
+// ISR function for inter-processor interrupts
+void proc1_isr(void* context)
 {
-	flagg = 1; //tell rest of program interrupt has been called
+	// Interrupt has been called interruptFlag
+	interruptFlag = 1;
 	// Clear edge capture register to acknowledge interrupt
     IOWR_ALTERA_AVALON_PIO_EDGE_CAP(IRQ_TO_PROC0_BASE, 0);
 }
 
-// ISR function for SWITCHES
-
-//use later on
-void pio_isr_proc0(void* context) {
-    IOWR_ALTERA_AVALON_PIO_EDGE_CAP(IRQ_TO_PROC0_BASE, 0x0);
-    //modify flag
-    printf("$");
-}
-
-//SET IRQ CONTROLLER
-//alt_ic_isr_register(IRQ_TO_PROC0_IRQ_INTERRUPT_CONTROLLER_ID, IRQ_TO_PROC0_IRQ, pio_isr_proc0, NULL, NULL);
-//IOWR_ALTERA_AVALON_PIO_IRQ_MASK(IRQ_FROM_PROC0_BASE, 0x1); // Enable IRQ
-
-//TO RECIEVE
-//while (flag == 0){dowhatever};
-//flag = 0;
-
-//TO SEND
-//IOWR_ALTERA_AVALON_PIO_DATA(IRQ_FROM_PROC0_BASE, 1); // rise
-//wait();
-//IOWR_ALTERA_AVALON_PIO_DATA(IRQ_FROM_PROC0_BASE, 0); // Pulse low
-
+// Image processing function prototypes from image_filtering.c
 void flip_image(alt_u8 *input_buffer, alt_u8 *output_buffer, int axis, int size);
 void blur(alt_u8 *input_buffer, alt_u8 *output_buffer, int size);
 void edge_detector(alt_u8 *input_buffer, alt_u8 *output_buffer, int size);
 
+
 int main() {
-    //printf("processor0\n");
     alt_mutex_dev* mutex = altera_avalon_mutex_open(MUTEX_0_NAME);
-    int start_time, end_time, duration;
+    int startTime, endTime, duration;
 
-    static uint8_t processing_buffer[IM_SIZE];
-    static uint8_t special_image[IM_SIZE];
+    // 2 full sized buffers, one for the normal image and quad mode,
+    // and the other for a full sized filter image
+    static uint8_t processingBuffer[IM_SIZE];
+    static uint8_t specialImage[IM_SIZE];
 
-    uint8_t *flip_quad_image = processing_buffer + IM_SIZEsmll;
-    uint8_t *blur_quad_image = processing_buffer + IM_SIZEsmll * 2;
-    uint8_t *edge_quad_image = processing_buffer + IM_SIZEsmll * 3;
+    // Pointers to offset locations in processing buffer for quad images
+    uint8_t *flipQuadImage = processingBuffer + IM_SIZE_QUAD;
+    uint8_t *blurQuadImage = processingBuffer + IM_SIZE_QUAD * 2;
+    uint8_t *edgeQuadImage = processingBuffer + IM_SIZE_QUAD * 3;
 
     // Initialise Displays
     IOWR_32DIRECT(HEX2_BASE, 0, 0xFFFFFF);
     int first_pixelvalue = 0;
     int last_pixelvalue = 0;
 
-    // FOR INTERRUPTS:
-
-
     // clear edge capture register
 	IOWR_ALTERA_AVALON_PIO_EDGE_CAP(IRQ_TO_PROC0_BASE, 0);
-
-    // enable interrupt for key 0 (bitmask depends on your setup)
+    // enable interrupt for key 0
     IOWR_ALTERA_AVALON_PIO_IRQ_MASK(IRQ_TO_PROC0_BASE, 0x1);
-
     // register ISR
-    alt_ic_isr_register(IRQ_TO_PROC0_IRQ_INTERRUPT_CONTROLLER_ID, IRQ_TO_PROC0_IRQ, key_isr,NULL,0x0 );
-
+    alt_ic_isr_register(IRQ_TO_PROC0_IRQ_INTERRUPT_CONTROLLER_ID, IRQ_TO_PROC0_IRQ, proc1_isr,NULL,0x0 );
 
     while (1) {
+
     	int timeFlag = 0;
 		int calculatingTime = 0;
 		altera_avalon_mutex_lock(mutex, 1);
@@ -111,183 +98,193 @@ int main() {
 		altera_avalon_mutex_unlock(mutex);
 
 		if (timeFlag == 1){
-			//end_time_prev = IORD_ALTERA_AVALON_PIO_DATA(USEC_COUNTER_PIO_BASE);
+			//endTime_prev = IORD_ALTERA_AVALON_PIO_DATA(USEC_COUNTER_PIO_BASE);
 
 			altera_avalon_mutex_lock(mutex, 1);
 			IOWR_8DIRECT(SHARED_MAILBOX_BASE, - 10, 0);
 			altera_avalon_mutex_unlock(mutex);
 
 
-			if (flagg == 1){ // interrupt has been called, check what caused it: key, switch or rotation
+			if (interruptFlag == 1){
+				// interrupt has been called, check what caused it: key, switch or rotation
 				altera_avalon_mutex_lock(mutex, 1);
 
+				// If interrupt caused by key
 				if(IORD_8DIRECT(SHARED_MAILBOX_BASE, - 4) == 1){ // if interrupt caused by key
-
-					//quad_mode = IORD_ALTERA_AVALON_PIO_DATA(SHARED_MAILBOX_BASE-1); // save key value
-					quad_mode = IORD_8DIRECT(SHARED_MAILBOX_BASE, -1);
-					printf("key interrupt received: %d \n", quad_mode);
-					//IOWR_ALTERA_AVALON_PIO_DATA(SHARED_MAILBOX_BASE-4, 0); // set key control to 0
+					// Save quadmode value
+					quadMode = IORD_8DIRECT(SHARED_MAILBOX_BASE, -1);
+					printf("key interrupt received: %d \n", quadMode);
+					// Set key interrupt flag value to 0
 					IOWR_8DIRECT(SHARED_MAILBOX_BASE, - 4 , 0);
-
 				}
 
-				if(IORD_8DIRECT(SHARED_MAILBOX_BASE,-5) == 1){ // interrupt caused by rotation
-
-					rot = IORD_8DIRECT(SHARED_MAILBOX_BASE,-2); //save rotation value
+				// If interrupt caused by rotation
+				if(IORD_8DIRECT(SHARED_MAILBOX_BASE,-5) == 1){
+					// Save rotation value
+					rot = IORD_8DIRECT(SHARED_MAILBOX_BASE,-2);
 					printf("rotation interrupt received: %d \n", rot);
-					IOWR_8DIRECT(SHARED_MAILBOX_BASE, -5, 0); // set rotaiton control to 0
-
+					// Set rotaiton interrupt flag to 0
+					IOWR_8DIRECT(SHARED_MAILBOX_BASE, -5, 0);
 				}
-
-				flagg = 0;
+				// reset interrupt flag and unlock memory
+				interruptFlag = 0;
 				altera_avalon_mutex_unlock(mutex);
 			}
 
+			// assign switches
 			int sw = IORD_ALTERA_AVALON_PIO_DATA(SW_BASE);
 
-			int top_left = (sw >> 0) & 0x3;  // SW[1:0]
-			int top_right = (sw >> 2) & 0x3;  // SW[3:2]
-			int bottom_left = (sw >> 4) & 0x3;  // SW[5:4]
-			int bottom_right = (sw >> 6) & 0x3;  // SW[7:6]
+			int swTopLeft = (sw >> 0) & 0x3;  // SW[1:0]
+			int swTopRight = (sw >> 2) & 0x3;  // SW[3:2]
+			int swBottomLeft = (sw >> 4) & 0x3;  // SW[5:4]
+			int swBottomRight = (sw >> 6) & 0x3;  // SW[7:6]
 
 
 			// get sdram frame to buffer
-			//altera_avalon_mutex_lock(mutex, 1);
 			for (int i = 0; i < IM_SIZE; i++) {
-				// base, offset, copy all pixels to processing_buffer
-				processing_buffer[i] = IORD_8DIRECT(SHARED_MAILBOX_BASE, i);
+				// base, offset, copy all pixels to processingBuffer
+				processingBuffer[i] = IORD_8DIRECT(SHARED_MAILBOX_BASE, i);
 			}
-			//altera_avalon_mutex_unlock(mutex);
 
-			// Processing & VGA Output
-			// loop through rows and columns
-
-			if(quad_mode == 0){
+			if(quadMode == 0){
 				//apply switch functionality for not quadrature
-							//sw = 0
-				if (top_left == 0) {
-					display_img(320, 240, 0, 0, processing_buffer);
+				if (swTopLeft == 0) {
+					display_img(320, 240, 0, 0, processingBuffer);
 				}
-				if (top_left == 1) {
-					flip_image(processing_buffer, special_image, 2, 0);
-					display_img(320, 240, 0, 0, special_image);
+				if (swTopLeft == 1) {
+					flip_image(processingBuffer, specialImage, 2, 0);
+					display_img(320, 240, 0, 0, specialImage);
 				}
-				if (top_left == 2) {
-					blur(processing_buffer, special_image, 0);
-					display_img(320, 240, 0, 0, special_image);
+				if (swTopLeft == 2) {
+					blur(processingBuffer, specialImage, 0);
+					display_img(320, 240, 0, 0, specialImage);
 				}
-				if (top_left == 3) {
-					edge_detector(processing_buffer, special_image, 0);
-					display_img(320, 240, 0, 0, special_image);
+				if (swTopLeft == 3) {
+					edge_detector(processingBuffer, specialImage, 0);
+					display_img(320, 240, 0, 0, specialImage);
 				}
 
-
-			} else { //quad mode on
-
-
-							// apply rotation mapping
+			} else {
+				//quad mode on
+				// apply rotation mapping
 				if (rot == 0) {
-					rot_top_left     = top_left;
-					rot_top_right    = top_right;
-					rot_bottom_left  = bottom_left;
-					rot_bottom_right = bottom_right;
+					rotTopLeft     = swTopLeft;
+					rotTopRight    = swTopRight;
+					rotBottomLeft  = swBottomLeft;
+					rotBottomRight = swBottomRight;
 				}
 				else if (rot == 1) {
-					rot_top_left     = bottom_left;
-					rot_top_right    = top_left;
-					rot_bottom_left  = bottom_right;
-					rot_bottom_right = top_right;
+					rotTopLeft     = swBottomLeft;
+					rotTopRight    = swTopLeft;
+					rotBottomLeft  = swBottomRight;
+					rotBottomRight = swTopRight;
 				}
 				else if (rot == 2) {
-					rot_top_left     = bottom_right;
-					rot_top_right    = bottom_left;
-					rot_bottom_left  = top_right;
-					rot_bottom_right = top_left;
+					rotTopLeft     = swBottomRight;
+					rotTopRight    = swBottomLeft;
+					rotBottomLeft  = swTopRight;
+					rotBottomRight = swTopLeft;
 				}
 				else if (rot == 3) {
-					rot_top_left     = top_right;
-					rot_top_right    = bottom_right;
-					rot_bottom_left  = top_left;
-					rot_bottom_right = bottom_left;
+					rotTopLeft     = swTopRight;
+					rotTopRight    = swBottomRight;
+					rotBottomLeft  = swTopLeft;
+					rotBottomRight = swBottomLeft;
 				}
 
-
-				if (rot_top_left == 1 || rot_top_right == 1 || rot_bottom_left == 1 || rot_bottom_right == 1) {
-					flip_image(processing_buffer, flip_quad_image, 2, 1);
+				// only run filters if they are needed
+				if (rotTopLeft == 1 || rotTopRight == 1 || rotBottomLeft == 1 || rotBottomRight == 1) {
+					flip_image(processingBuffer, flipQuadImage, 2, 1);
 				}
-				if (rot_top_left == 2 || rot_top_right == 2 || rot_bottom_left == 2 || rot_bottom_right == 2) {
-					blur(processing_buffer, blur_quad_image, 1);
+				if (rotTopLeft == 2 || rotTopRight == 2 || rotBottomLeft == 2 || rotBottomRight == 2) {
+					blur(processingBuffer, blurQuadImage, 1);
 				}
-				if (rot_top_left == 3 || rot_top_right == 3 || rot_bottom_left == 3 || rot_bottom_right == 3) {
-					edge_detector(processing_buffer, edge_quad_image, 1);
+				if (rotTopLeft == 3 || rotTopRight == 3 || rotBottomLeft == 3 || rotBottomRight == 3) {
+					edge_detector(processingBuffer, edgeQuadImage, 1);
 				}
 
-				// 2. Display Top Left
-				if (rot_top_left == 0) { display_img(160, 120, 0, 0, processing_buffer); }
-				if (rot_top_left == 1) { display_img(160, 120, 0, 0, flip_quad_image); }
-				if (rot_top_left == 2) { display_img(160, 120, 0, 0, blur_quad_image); }
-				if (rot_top_left == 3) { display_img(160, 120, 0, 0, edge_quad_image); }
+				// Display Top Left
+				if (rotTopLeft == 0) {
+					display_img(160, 120, 0, 0, processingBuffer);
+				}
+				if (rotTopLeft == 1) {
+					display_img(160, 120, 0, 0, flipQuadImage);
+				}
+				if (rotTopLeft == 2) {
+					display_img(160, 120, 0, 0, blurQuadImage);
+				}
+				if (rotTopLeft == 3) {
+					display_img(160, 120, 0, 0, edgeQuadImage);
+				}
 
-				// 3. Display Top Right
-				if (rot_top_right == 0) { display_img(160, 120, 160, 0, processing_buffer); }
-				if (rot_top_right == 1) { display_img(160, 120, 160, 0, flip_quad_image); }
-				if (rot_top_right == 2) { display_img(160, 120, 160, 0, blur_quad_image); }
-				if (rot_top_right == 3) { display_img(160, 120, 160, 0, edge_quad_image); }
+				// Display Top Right
+				if (rotTopRight == 0) {
+					display_img(160, 120, 160, 0, processingBuffer);
+				}
+				if (rotTopRight == 1) {
+					display_img(160, 120, 160, 0, flipQuadImage); }
+				if (rotTopRight == 2) { display_img(160, 120, 160, 0, blurQuadImage);
+				}
+				if (rotTopRight == 3) {
+					display_img(160, 120, 160, 0, edgeQuadImage);
+				}
 
-				// 4. Display Bottom Left
-				if (rot_bottom_left == 0) { display_img(160, 120, 0, 120, processing_buffer); }
-				if (rot_bottom_left == 1) { display_img(160, 120, 0, 120, flip_quad_image); }
-				if (rot_bottom_left == 2) { display_img(160, 120, 0, 120, blur_quad_image); }
-				if (rot_bottom_left == 3) { display_img(160, 120, 0, 120, edge_quad_image); }
+				// Display Bottom Left
+				if (rotBottomLeft == 0) {
+					display_img(160, 120, 0, 120, processingBuffer);
+				}
+				if (rotBottomLeft == 1) {
+					display_img(160, 120, 0, 120, flipQuadImage);
+				}
+				if (rotBottomLeft == 2) {
+					display_img(160, 120, 0, 120, blurQuadImage);
+				}
+				if (rotBottomLeft == 3) {
+					display_img(160, 120, 0, 120, edgeQuadImage);
+				}
 
-				// 5. Display Bottom Right
-				if (rot_bottom_right == 0) { display_img(160, 120, 160, 120, processing_buffer); }
-				if (rot_bottom_right == 1) { display_img(160, 120, 160, 120, flip_quad_image); }
-				if (rot_bottom_right == 2) { display_img(160, 120, 160, 120, blur_quad_image); }
-				if (rot_bottom_right == 3) { display_img(160, 120, 160, 120, edge_quad_image); }
+				// Display Bottom Right
+				if (rotBottomRight == 0) {
+					display_img(160, 120, 160, 120, processingBuffer);
+				}
+				if (rotBottomRight == 1) {
+					display_img(160, 120, 160, 120, flipQuadImage);
+				}
+				if (rotBottomRight == 2) {
+					display_img(160, 120, 160, 120, blurQuadImage);
+				}
+				if (rotBottomRight == 3) {
+					display_img(160, 120, 160, 120, edgeQuadImage);
+				}
 
-				//rot = 0
-
-							//apply switch functionality for quadrature
-				//sw = 0
-				/*
-				display_img(160, 120, 0, 0, processing_buffer);
-				display_img(160, 120, 160, 0, processing_buffer);
-				display_img(160, 120, 0, 120, processing_buffer);
-				display_img(160, 120, 160, 120, processing_buffer);
-				*/
 			}
 
-			end_time = IORD_ALTERA_AVALON_PIO_DATA(USEC_COUNTER_PIO_BASE);
-			duration = end_time - start_time;
+			// calculate fps
+			endTime = IORD_ALTERA_AVALON_PIO_DATA(USEC_COUNTER_PIO_BASE);
+			duration = endTime - startTime;
 
 			display_fps(duration);
 
-			start_time = IORD_ALTERA_AVALON_PIO_DATA(USEC_COUNTER_PIO_BASE);
+			startTime = IORD_ALTERA_AVALON_PIO_DATA(USEC_COUNTER_PIO_BASE);
 		}
     }
     return 0;
 }
 
+// Copy frames to sdram shared with processor 2
+void display_img(int width, int height, int startX, int startY, alt_u8 *processingBuffer)  {
+    alt_u8 *img = processingBuffer;
 
-void display_img(int width, int height, int startx, int starty, alt_u8 *processing_buffer)  {
-    alt_u8 *img = processing_buffer;
-
-    // only for debugging, weird black pixel check value of certain adresses
-    //printf("TL: %d\n", buffer[0] >> 4);
-    //printf("TR: %d\n", buffer[width - 1] >> 4);
-    //printf("BL: %d\n", buffer[(height - 1) * width] >> 4);
-    //printf("BR: %d\n", buffer[width * height - 1] >> 4);
+    // iterate through pixels
     for (int i = 0; i < height; i++) {
         for (int j = 0; j < width*3/2; j++) {
-            int screen_x = startx*3/2 + j;
-            int screen_y = starty + i;
+            int screenX = startX*3/2 + j;
+            int screenY = startY + i;
 
-            //IOWR(PIX_BUFF_ADDR_BASE, 0, (screen_y * 320) + screen_x);
-            //IOWR(PIX_DATA_BASE, 0, img[i * width + j - 1] >> 4); // bit shift by 4 coz 8 bit value only have 4 bits colour
-            int location = (screen_y * 320*3/2) + screen_x;
+            int location = (screenY * 320*3/2) + screenX;
 			int pixel = img[i * width *3/2 + j];
 
+			// load into shared sdram
 			IOWR_8DIRECT(MAILBOX_BASE_PRINT, location , pixel);
 
 
@@ -298,7 +295,7 @@ void display_img(int width, int height, int startx, int starty, alt_u8 *processi
 
 // function for displaying hex
 void display_fps(int duration) {
-    uint8_t hex_lookup[] = { // map numbers to corresponding 7 seg bits being on (hex is like inverse, so 1 = off) from 2072 lol
+    uint8_t hexLookup[] = { // map numbers to corresponding 7 seg bits being on (hex is like inverse, so 1 = off) from 2072 lol
         //8th bit always 1 since that is the decimal point, toggle that manually later
         0b11000000, // 0
         0b11111001, // 1
@@ -328,26 +325,24 @@ void display_fps(int duration) {
 
 
     // convert to 7seg
-    uint8_t display5 = hex_lookup[digit5];
-    uint8_t display4 = hex_lookup[digit4];
-    uint8_t display3 = hex_lookup[digit3];
+    uint8_t display5 = hexLookup[digit5];
+    uint8_t display4 = hexLookup[digit4];
+    uint8_t display3 = hexLookup[digit3];
 
-    uint8_t display2 = hex_lookup[digit2];
-    uint8_t display1 = hex_lookup[digit1];
-    uint8_t display0 = hex_lookup[digit0];
+    uint8_t display2 = hexLookup[digit2];
+    uint8_t display1 = hexLookup[digit1];
+    uint8_t display0 = hexLookup[digit0];
 
     display2 = display2 & 0b01111111;
 
-
     // Combine the 3 bytes into one value to send over HEX1_BASE
-    int hex_data1 = (display2 << 16) | (display1 << 8) | display0;
+    int hexData1 = (display2 << 16) | (display1 << 8) | display0;
 
-    int hex_data2 = (display5 << 16) | (display4 << 8) | display3;
-
+    int hexData2 = (display5 << 16) | (display4 << 8) | display3;
 
     //write to hex displays
-    IOWR_32DIRECT(HEX1_BASE, 0, hex_data1); // Write to HEX1_BASE (Right 3 displays)
+    IOWR_32DIRECT(HEX1_BASE, 0, hexData1); // Write to HEX1_BASE (Right 3 displays)
 
-    IOWR_32DIRECT(HEX2_BASE, 0, hex_data2); // Write to HEX2_BASE (left 3 displays)
+    IOWR_32DIRECT(HEX2_BASE, 0, hexData2); // Write to HEX2_BASE (left 3 displays)
 
 }
