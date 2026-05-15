@@ -1,3 +1,11 @@
+/*
+   Processor 2, added for task 4 part 1
+   Gets processed frames from shared sdram with proc 0 and displays it to vga
+*/
+// Created By : Team A06
+// Created Date: 15/05/2026
+// version = Final
+
 #include <stdio.h>
 #include "sys/alt_stdio.h"
 #include <stdint.h>
