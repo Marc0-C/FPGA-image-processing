@@ -1,14 +1,20 @@
+/*
+   Processor 2, added for task 4 part 1
+   Gets processed frames from shared sdram with proc 0 and displays it to vga
+*/
+// Created By : Team A06
+// Created Date: 15/05/2026
+// version = Final
+
 #include <stdio.h>
 #include "sys/alt_stdio.h"
 #include <stdint.h>
 #include "system.h"
 #include "io.h"
-//#include "altera_avalon_mutex.h"
 #include "altera_avalon_pio_regs.h"
 #include <stdint.h>
 #include <stdlib.h>
 #include "sys/alt_irq.h"
-
 
 #define MAILBOX_BASE_PRINT 0x017A1220
 
@@ -25,7 +31,6 @@ int main()
 	    if (frame%10==0){
 	    	//printf("%d frames sent", frame);
 	    }
-
   }
 
   return 0;

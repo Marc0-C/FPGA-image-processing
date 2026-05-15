@@ -22,6 +22,7 @@
 BSP_LINKER_SCRIPT := $(ALT_LIBRARY_ROOT_DIR)/linker.x
 
 # Include paths:
+
 # The path to root of all header files that a library wishes to make
 # available for an application's use is specified here. Note that this
 # may not be *all* folders within a hierarchy. For example, if it is

@@ -3,6 +3,7 @@
 	<name>processor2_bsp</name>
 	<comment></comment>
 	<projects>
+		<project>processor2</project>
 	</projects>
 	<buildSpec>
 		<buildCommand>
