@@ -1,19 +1,19 @@
 module top_level (
 	// ---- Generic IO ---- //
-	input 			CLOCK_50,
+	input 	CLOCK_50,
 	inout 	[35:0] GPIO,
-	input		[9:0] SW,
-	input		[1:0] KEY,
+	input	[9:0] SW,
+	input	[1:0] KEY,
 	output	[9:0] LEDR,
 	output  [7:0]   HEX0, HEX1, HEX2, HEX3, HEX4, HEX5,	
 	// ---- SDRAM IO ---- //
 	output	[12:0]	DRAM_ADDR,
-	output	[1:0]		DRAM_BA,
+	output	[1:0]	DRAM_BA,
 	output			DRAM_CAS_N,
 	output			DRAM_CKE,
 	output			DRAM_CLK,
 	output			DRAM_CS_N,
-	inout		[15:0]	DRAM_DQ,
+	inout	[15:0]	DRAM_DQ,
 	output			DRAM_LDQM,
 	output			DRAM_UDQM,
 	output			DRAM_RAS_N,
@@ -21,11 +21,11 @@ module top_level (
 	
 	// ---- VGA IO ---- //
 	output			VGA_CLK,
-	output [3:0]   VGA_R,
-	output [3:0]   VGA_G,
-	output [3:0]   VGA_B,
-	output         VGA_HS,
-	output         VGA_VS,
+	output [3:0]   	VGA_R,
+	output [3:0]   	VGA_G,
+	output [3:0]   	VGA_B,
+	output         	VGA_HS,
+	output        	VGA_VS,
 	
 	// ---- SPI IO ---- //
 	output         GSENSOR_CS_N,	// chip select
@@ -108,7 +108,7 @@ module top_level (
 		  
 		.pix_buff_addr_export_export (buffer_wadrr),
 		.pix_data_r_export_export    (pixel_data_R),
-		  .pix_data_g_export_export    (pixel_data_G),
+		.pix_data_g_export_export    (pixel_data_G),
 		.pix_data_b_export_export    (pixel_data_B),
 		.cam_ready_export_export     (GPIO[2]),  
 		
@@ -116,25 +116,26 @@ module top_level (
 		.spi_0_external_MISO         (multiplexed_miso),
 		.spi_0_external_MOSI         (nios_mosi),
 		.spi_0_external_SCLK         (nios_sclk),
+		
 		// Bit 0 for Accelerometer, Bit 1 for Camera
 		.spi_0_external_SS_n         ({GPIO[5], GSENSOR_CS_N}), 
-		//.spi_0_external_SS_n    ({GPIO[10], GSENSOR_CS_N}
+		
 		  
-		  // --- Counter ---
-		  .usec_counter_pio_export_export(current_usec),
+	  	// --- Counter ---
+	  	.usec_counter_pio_export_export(current_usec),
 		  
-		  // --- interporcessor IRQ --
-		  .irq_to_proc1_export   (pio_0_to_1),      
-		  .irq_from_proc1_export      (pio_1_to_0),     
-		  .irq_from_proc0_export      (pio_0_to_1),     
-		  .irq_to_proc0_export   (pio_1_to_0)  
+	  	// --- interporcessor IRQ --
+	 	.irq_to_proc1_export   (pio_0_to_1),      
+	  	.irq_from_proc1_export (pio_1_to_0),     
+	  	.irq_from_proc0_export (pio_0_to_1),     
+	  	.irq_to_proc0_export   (pio_1_to_0)  
 		  
 	);
 	
   
  	// instantiate provided vga controller
 	vga_controller controller (
-		.VGA_CLK					(VGA_CLK),
+		.VGA_CLK				(VGA_CLK),
 		.VGA_DATA_R				(pixel_buff_R_out),
 		.VGA_DATA_G				(pixel_buff_G_out),
 		.VGA_DATA_B				(pixel_buff_B_out),
