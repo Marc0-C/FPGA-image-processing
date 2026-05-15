@@ -662,7 +662,7 @@
   <parameter name="clockRate" value="50000000" />
   <parameter name="direction" value="Input" />
   <parameter name="edgeType" value="RISING" />
-  <parameter name="generateIRQ" value="true" />
+  <parameter name="generateIRQ" value="false" />
   <parameter name="irqType" value="EDGE" />
   <parameter name="resetValue" value="0" />
   <parameter name="simDoTestBenchWiring" value="false" />
@@ -1074,7 +1074,7 @@
   <parameter name="instruction_master_high_performance_paddr_size" value="0" />
   <parameter name="instruction_master_paddr_base" value="0" />
   <parameter name="instruction_master_paddr_size" value="0" />
-  <parameter name="internalIrqMaskSystemInfo" value="45" />
+  <parameter name="internalIrqMaskSystemInfo" value="41" />
   <parameter name="io_regionbase" value="0" />
   <parameter name="io_regionsize" value="0" />
   <parameter name="master_addr_map" value="false" />
@@ -1256,7 +1256,7 @@
   <parameter name="instruction_master_high_performance_paddr_size" value="0" />
   <parameter name="instruction_master_paddr_base" value="0" />
   <parameter name="instruction_master_paddr_size" value="0" />
-  <parameter name="internalIrqMaskSystemInfo" value="211" />
+  <parameter name="internalIrqMaskSystemInfo" value="83" />
   <parameter name="io_regionbase" value="0" />
   <parameter name="io_regionsize" value="0" />
   <parameter name="master_addr_map" value="false" />
@@ -2001,9 +2001,6 @@
    end="KEY.irq">
   <parameter name="irqNumber" value="3" />
  </connection>
- <connection kind="interrupt" version="18.1" start="nios2_gen2_0.irq" end="SW.irq">
-  <parameter name="irqNumber" value="2" />
- </connection>
  <connection
    kind="interrupt"
    version="18.1"
@@ -2038,9 +2035,6 @@
    start="nios2_gen2_1.irq"
    end="KEY.irq">
   <parameter name="irqNumber" value="1" />
- </connection>
- <connection kind="interrupt" version="18.1" start="nios2_gen2_1.irq" end="SW.irq">
-  <parameter name="irqNumber" value="7" />
  </connection>
  <connection
    kind="interrupt"

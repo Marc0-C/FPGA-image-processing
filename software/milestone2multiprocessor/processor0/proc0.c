@@ -275,7 +275,7 @@ void display_img(int width, int height, int startx, int starty, alt_u8 *processi
             //IOWR(PIX_BUFF_ADDR_BASE, 0, (screen_y * 320) + screen_x);
             //IOWR(PIX_DATA_BASE, 0, img[i * width + j - 1] >> 4); // bit shift by 4 coz 8 bit value only have 4 bits colour
             int location = (screen_y * 320) + screen_x;
-			int pixel = img[i * width + j - 1] >> 4;
+			int pixel = img[i * width + j] >> 4;
 			IOWR_8DIRECT(MAILBOX_BASE_PRINT, location , pixel);
 
         }

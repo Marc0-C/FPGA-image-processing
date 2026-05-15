@@ -4,7 +4,7 @@
  * Machine generated for CPU 'nios2_gen2_1' in SOPC Builder design 'nios_system'
  * SOPC Builder design path: ../../../nios_system.sopcinfo
  *
- * Generated: Thu May 14 13:17:21 EST 2026
+ * Generated: Thu May 14 14:01:39 EST 2026
  */
 
 /*
@@ -222,9 +222,9 @@
 #define SW_HAS_IN 1
 #define SW_HAS_OUT 0
 #define SW_HAS_TRI 0
-#define SW_IRQ 7
-#define SW_IRQ_INTERRUPT_CONTROLLER_ID 0
-#define SW_IRQ_TYPE "EDGE"
+#define SW_IRQ -1
+#define SW_IRQ_INTERRUPT_CONTROLLER_ID -1
+#define SW_IRQ_TYPE "NONE"
 #define SW_NAME "/dev/SW"
 #define SW_RESET_VALUE 0
 #define SW_SPAN 16

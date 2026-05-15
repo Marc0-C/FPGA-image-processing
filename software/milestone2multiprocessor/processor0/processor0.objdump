@@ -35,43 +35,43 @@ Idx Name          Size      VMA       LMA       File off  Algn
                   CONTENTS, READONLY
   8 .debug_aranges 000005c0  00000000  00000000  00004630  2**3
                   CONTENTS, READONLY, DEBUGGING
-  9 .debug_info   00007ffb  00000000  00000000  00004bf0  2**0
+  9 .debug_info   00007ff3  00000000  00000000  00004bf0  2**0
                   CONTENTS, READONLY, DEBUGGING
- 10 .debug_abbrev 00002e37  00000000  00000000  0000cbeb  2**0
+ 10 .debug_abbrev 00002e44  00000000  00000000  0000cbe3  2**0
                   CONTENTS, READONLY, DEBUGGING
- 11 .debug_line   0000315c  00000000  00000000  0000fa22  2**0
+ 11 .debug_line   00003160  00000000  00000000  0000fa27  2**0
                   CONTENTS, READONLY, DEBUGGING
- 12 .debug_frame  000008ec  00000000  00000000  00012b80  2**2
+ 12 .debug_frame  000008ec  00000000  00000000  00012b88  2**2
                   CONTENTS, READONLY, DEBUGGING
- 13 .debug_str    000020bf  00000000  00000000  0001346c  2**0
+ 13 .debug_str    000020bf  00000000  00000000  00013474  2**0
                   CONTENTS, READONLY, DEBUGGING
- 14 .debug_loc    00005ff6  00000000  00000000  0001552b  2**0
+ 14 .debug_loc    00005f6e  00000000  00000000  00015533  2**0
                   CONTENTS, READONLY, DEBUGGING
- 15 .debug_alt_sim_info 00000030  00000000  00000000  0001b524  2**2
+ 15 .debug_alt_sim_info 00000030  00000000  00000000  0001b4a4  2**2
                   CONTENTS, READONLY, DEBUGGING
- 16 .debug_ranges 000008e0  00000000  00000000  0001b558  2**3
+ 16 .debug_ranges 000008e8  00000000  00000000  0001b4d8  2**3
                   CONTENTS, READONLY, DEBUGGING
- 17 .thread_model 00000003  00000000  00000000  0001d856  2**0
+ 17 .thread_model 00000003  00000000  00000000  0001d7de  2**0
                   CONTENTS, READONLY
- 18 .cpu          0000000c  00000000  00000000  0001d859  2**0
+ 18 .cpu          0000000c  00000000  00000000  0001d7e1  2**0
                   CONTENTS, READONLY
- 19 .qsys         00000001  00000000  00000000  0001d865  2**0
+ 19 .qsys         00000001  00000000  00000000  0001d7ed  2**0
                   CONTENTS, READONLY
- 20 .simulation_enabled 00000001  00000000  00000000  0001d866  2**0
+ 20 .simulation_enabled 00000001  00000000  00000000  0001d7ee  2**0
                   CONTENTS, READONLY
- 21 .stderr_dev   0000000b  00000000  00000000  0001d867  2**0
+ 21 .stderr_dev   0000000b  00000000  00000000  0001d7ef  2**0
                   CONTENTS, READONLY
- 22 .stdin_dev    0000000b  00000000  00000000  0001d872  2**0
+ 22 .stdin_dev    0000000b  00000000  00000000  0001d7fa  2**0
                   CONTENTS, READONLY
- 23 .stdout_dev   0000000b  00000000  00000000  0001d87d  2**0
+ 23 .stdout_dev   0000000b  00000000  00000000  0001d805  2**0
                   CONTENTS, READONLY
- 24 .sopc_system_name 0000000b  00000000  00000000  0001d888  2**0
+ 24 .sopc_system_name 0000000b  00000000  00000000  0001d810  2**0
                   CONTENTS, READONLY
- 25 .quartus_project_dir 00000045  00000000  00000000  0001d893  2**0
+ 25 .quartus_project_dir 00000045  00000000  00000000  0001d81b  2**0
                   CONTENTS, READONLY
- 26 .jdi          0000eeef  00000000  00000000  0001d8d8  2**0
+ 26 .jdi          0000eeef  00000000  00000000  0001d860  2**0
                   CONTENTS, READONLY
- 27 .sopcinfo     000da3ce  00000000  00000000  0002c7c7  2**0
+ 27 .sopcinfo     000d9007  00000000  00000000  0002c74f  2**0
                   CONTENTS, READONLY
 SYMBOL TABLE:
 00000000 l    d  .entry	00000000 .entry
@@ -1504,74 +1504,89 @@ void pio_isr_proc0(void* context) {
 
 
 void display_img(int width, int height, int startx, int starty, alt_u8 *processing_buffer)  {
-     748:	d8c00017 	ldw	r3,0(sp)
-     74c:	3ac05024 	muli	r11,r7,320
+     748:	39c05024 	muli	r7,r7,320
+     74c:	d8800017 	ldw	r2,0(sp)
+     750:	02405004 	movi	r9,320
+     754:	398d883a 	add	r6,r7,r6
 
             //IOWR(PIX_BUFF_ADDR_BASE, 0, (screen_y * 320) + screen_x);
             //IOWR(PIX_DATA_BASE, 0, img[i * width + j - 1] >> 4); // bit shift by 4 coz 8 bit value only have 4 bits colour
             int location = (screen_y * 320) + screen_x;
-			int pixel = img[i * width + j - 1] >> 4;
+			int pixel = img[i * width + j] >> 4;
 			IOWR_8DIRECT(MAILBOX_BASE_PRINT, location , pixel);
-     750:	03405eb4 	movhi	r13,378
-     754:	18ffffc4 	addi	r3,r3,-1
-     758:	5997883a 	add	r11,r11,r6
+     758:	02c05eb4 	movhi	r11,378
+     75c:	0091c83a 	sub	r8,zero,r2
+     760:	4913c83a 	sub	r9,r9,r4
+     764:	308dc83a 	sub	r6,r6,r2
     //printf("TL: %d\n", buffer[0] >> 4);
     //printf("TR: %d\n", buffer[width - 1] >> 4);
     //printf("BL: %d\n", buffer[(height - 1) * width] >> 4);
     //printf("BR: %d\n", buffer[width * height - 1] >> 4);
 
     for (int i = 0; i < height; i++) {
-     75c:	0011883a 	mov	r8,zero
+     768:	000f883a 	mov	r7,zero
 
             //IOWR(PIX_BUFF_ADDR_BASE, 0, (screen_y * 320) + screen_x);
             //IOWR(PIX_DATA_BASE, 0, img[i * width + j - 1] >> 4); // bit shift by 4 coz 8 bit value only have 4 bits colour
             int location = (screen_y * 320) + screen_x;
-			int pixel = img[i * width + j - 1] >> 4;
+			int pixel = img[i * width + j] >> 4;
 			IOWR_8DIRECT(MAILBOX_BASE_PRINT, location , pixel);
-     760:	6b448804 	addi	r13,r13,4640
+     76c:	5ac48804 	addi	r11,r11,4640
     //printf("TL: %d\n", buffer[0] >> 4);
     //printf("TR: %d\n", buffer[width - 1] >> 4);
     //printf("BL: %d\n", buffer[(height - 1) * width] >> 4);
     //printf("BR: %d\n", buffer[width * height - 1] >> 4);
 
     for (int i = 0; i < height; i++) {
-     764:	4140120e 	bge	r8,r5,7b0 <display_img+0x68>
-     768:	3a05883a 	add	r2,r7,r8
-     76c:	10805024 	muli	r2,r2,320
-     770:	42805024 	muli	r10,r8,320
-     774:	1813883a 	mov	r9,r3
-     778:	1185883a 	add	r2,r2,r6
-     77c:	52d5883a 	add	r10,r10,r11
+     770:	39400f0e 	bge	r7,r5,7b0 <display_img+0x68>
+     774:	1007883a 	mov	r3,r2
+
+            //IOWR(PIX_BUFF_ADDR_BASE, 0, (screen_y * 320) + screen_x);
+            //IOWR(PIX_DATA_BASE, 0, img[i * width + j - 1] >> 4); // bit shift by 4 coz 8 bit value only have 4 bits colour
+            int location = (screen_y * 320) + screen_x;
+			int pixel = img[i * width + j] >> 4;
+			IOWR_8DIRECT(MAILBOX_BASE_PRINT, location , pixel);
+     778:	32d9883a 	add	r12,r6,r11
+    //printf("TR: %d\n", buffer[width - 1] >> 4);
+    //printf("BL: %d\n", buffer[(height - 1) * width] >> 4);
+    //printf("BR: %d\n", buffer[width * height - 1] >> 4);
+
+    for (int i = 0; i < height; i++) {
         for (int j = 0; j < width; j++) {
-     780:	1299c83a 	sub	r12,r2,r10
-     784:	6100070e 	bge	r12,r4,7a4 <display_img+0x5c>
+     77c:	40d5883a 	add	r10,r8,r3
+     780:	5100060e 	bge	r10,r4,79c <display_img+0x54>
 
             //IOWR(PIX_BUFF_ADDR_BASE, 0, (screen_y * 320) + screen_x);
             //IOWR(PIX_DATA_BASE, 0, img[i * width + j - 1] >> 4); // bit shift by 4 coz 8 bit value only have 4 bits colour
             int location = (screen_y * 320) + screen_x;
-			int pixel = img[i * width + j - 1] >> 4;
+			int pixel = img[i * width + j] >> 4;
 			IOWR_8DIRECT(MAILBOX_BASE_PRINT, location , pixel);
-     788:	4b000003 	ldbu	r12,0(r9)
-     78c:	135d883a 	add	r14,r2,r13
-     790:	6018d13a 	srli	r12,r12,4
-     794:	73000025 	stbio	r12,0(r14)
-     798:	4a400044 	addi	r9,r9,1
-     79c:	10800044 	addi	r2,r2,1
-     7a0:	003ff706 	br	780 <__alt_data_end+0xff85f560>
+     784:	1a800003 	ldbu	r10,0(r3)
+     788:	60db883a 	add	r13,r12,r3
+     78c:	5014d13a 	srli	r10,r10,4
+     790:	6a800025 	stbio	r10,0(r13)
+     794:	18c00044 	addi	r3,r3,1
+     798:	003ff806 	br	77c <__alt_data_end+0xff85f55c>
     //printf("TL: %d\n", buffer[0] >> 4);
     //printf("TR: %d\n", buffer[width - 1] >> 4);
     //printf("BL: %d\n", buffer[(height - 1) * width] >> 4);
     //printf("BR: %d\n", buffer[width * height - 1] >> 4);
 
     for (int i = 0; i < height; i++) {
-     7a4:	42000044 	addi	r8,r8,1
-     7a8:	1907883a 	add	r3,r3,r4
-     7ac:	003fed06 	br	764 <__alt_data_end+0xff85f544>
+     79c:	39c00044 	addi	r7,r7,1
+     7a0:	1105883a 	add	r2,r2,r4
+     7a4:	4111c83a 	sub	r8,r8,r4
+     7a8:	324d883a 	add	r6,r6,r9
+     7ac:	003ff006 	br	770 <__alt_data_end+0xff85f550>
+			int pixel = img[i * width + j] >> 4;
+			IOWR_8DIRECT(MAILBOX_BASE_PRINT, location , pixel);
+
+        }
+    }
+}
      7b0:	f800283a 	ret
 
 000007b4 <display_fps>:
-    }
-}
 
 
 // function for displaying hex

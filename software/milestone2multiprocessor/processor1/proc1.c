@@ -86,14 +86,17 @@ void pio_isr_proc1(void* context) {
 
 volatile int quadmode = 0;
 
+
 // ISR function for KEY PRESSES
 void key_isr(void* context)
 {
 	// Clear edge capture register to acknowledge interrupt
     IOWR_ALTERA_AVALON_PIO_EDGE_CAP(KEY_BASE, 0);
     //set wire irq to 0
-    if (quadmode == 0){quadmode = 1;
-    }else{quadmode = 0;}
+
+    quadmode = !quadmode;
+
+
     keypressed = 1;
 }
 
@@ -107,6 +110,7 @@ void sw_isr(void* context)
 }
 
 int main() {
+	printf("Hello from processor 1\n");
     alt_mutex_dev* mutex = altera_avalon_mutex_open(MUTEX_0_NAME);
     IOWR_ALTERA_AVALON_PIO_DATA(SHARED_MAILBOX_BASE-1, 0);
     IOWR_ALTERA_AVALON_PIO_DATA(SHARED_MAILBOX_BASE-2, 0);
@@ -122,10 +126,19 @@ int main() {
     alt_16 yData;
 
 
-    alt_u8 cam_set = 0;
+    alt_u8 cam_set = 16; // camera settings var
+
+
+    static uint8_t dummy_buffer[IM_SIZE]; // for writing junk info into when changing cam settings
+    int lastQuadMode = 0; // keep track of if mode changes, to update cam settings
+
+
     // buffer to hold SPI data before moving to SDRAM
     static uint8_t image_buffer[IM_SIZE];
     int framenum = 0;
+
+    cam_set = 16; // default settings except "settings changed" = true
+    alt_avalon_spi_command(SPI_0_BASE, 1, 0, &cam_set, IM_SIZE, image_buffer, 0);
 
     // clear edge capture register
     IOWR_ALTERA_AVALON_PIO_EDGE_CAP(KEY_BASE, 0);
@@ -152,6 +165,33 @@ int main() {
 
 
 
+		if (quadmode != lastQuadMode) {
+			printf("quadmode changed?\n");
+
+			if (quadmode == 1){
+				lastQuadMode = 1;
+
+				cam_set = 18; // default settings except downscaled & "settings changed" = true
+
+				while (IORD_ALTERA_AVALON_PIO_DATA(CAM_READY_BASE) == 0) {
+					printf("Not ready yet\n");
+				}
+
+				alt_avalon_spi_command(SPI_0_BASE, 1, 1, &cam_set, IM_SIZEsmll, dummy_buffer, 0);
+			}
+			else {
+				lastQuadMode = 0;
+				cam_set = 16; // default settings except "settings changed" = true
+
+				while (IORD_ALTERA_AVALON_PIO_DATA(CAM_READY_BASE) == 0) {
+					printf("Not ready yet\n");
+				}
+
+				alt_avalon_spi_command(SPI_0_BASE, 1, 1, &cam_set, IM_SIZE, dummy_buffer, 0);
+			}
+		}
+
+
     	if (quadmode == 1){// if quad mode then accelerometer can send interrupts
     		if (yData > 75) {
     			rotation = (rotation + 1) % 4;
@@ -174,11 +214,11 @@ int main() {
         	    printf("sent rotation interrupt \n");
         	    IOWR_ALTERA_AVALON_PIO_DATA(IRQ_FROM_PROC1_BASE, 0);
     		}
-    	    cam_set = 18; // default settings except downscaled & "settings changed" = true
-    	    alt_avalon_spi_command(SPI_0_BASE, 1, 1, &cam_set, IM_SIZEsmll, image_buffer, 0);
+    	    //cam_set = 0x0; // default settings except downscaled & "settings changed" = true
+    	    alt_avalon_spi_command(SPI_0_BASE, 1, 0, NULL, IM_SIZEsmll, image_buffer, 0);
     	}else{
-    		cam_set = 16;
-    		alt_avalon_spi_command(SPI_0_BASE, 1, 1, &cam_set, IM_SIZE, image_buffer, 0);
+    		//cam_set = 0x0;
+    		alt_avalon_spi_command(SPI_0_BASE, 1, 0, NULL, IM_SIZE, image_buffer, 0);
     	}
     	if(switchmoved == 1){
     		switchvalue = IORD_ALTERA_AVALON_PIO_DATA(SW_BASE);
