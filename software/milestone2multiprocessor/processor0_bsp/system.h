@@ -4,7 +4,7 @@
  * Machine generated for CPU 'nios2_gen2_0' in SOPC Builder design 'nios_system'
  * SOPC Builder design path: ../../../nios_system.sopcinfo
  *
- * Generated: Thu May 14 14:01:44 EST 2026
+ * Generated: Fri May 15 19:14:37 EST 2026
  */
 
 /*
@@ -155,7 +155,7 @@
  */
 
 #define ALT_MODULE_CLASS_HEX1 altera_avalon_pio
-#define HEX1_BASE 0x4001070
+#define HEX1_BASE 0x4001090
 #define HEX1_BIT_CLEARING_EDGE_REGISTER 0
 #define HEX1_BIT_MODIFYING_OUTPUT_REGISTER 0
 #define HEX1_CAPTURE 0
@@ -182,7 +182,7 @@
  */
 
 #define ALT_MODULE_CLASS_HEX2 altera_avalon_pio
-#define HEX2_BASE 0x4001080
+#define HEX2_BASE 0x40010a0
 #define HEX2_BIT_CLEARING_EDGE_REGISTER 0
 #define HEX2_BIT_MODIFYING_OUTPUT_REGISTER 0
 #define HEX2_CAPTURE 0
@@ -209,7 +209,7 @@
  */
 
 #define ALT_MODULE_CLASS_KEY altera_avalon_pio
-#define KEY_BASE 0x4001060
+#define KEY_BASE 0x4001080
 #define KEY_BIT_CLEARING_EDGE_REGISTER 0
 #define KEY_BIT_MODIFYING_OUTPUT_REGISTER 0
 #define KEY_CAPTURE 1
@@ -236,7 +236,7 @@
  */
 
 #define ALT_MODULE_CLASS_LEDR altera_avalon_pio
-#define LEDR_BASE 0x4001040
+#define LEDR_BASE 0x4001060
 #define LEDR_BIT_CLEARING_EDGE_REGISTER 0
 #define LEDR_BIT_MODIFYING_OUTPUT_REGISTER 0
 #define LEDR_CAPTURE 0
@@ -258,30 +258,84 @@
 
 
 /*
- * Pix_Data configuration
+ * Pix_Data_B configuration
  *
  */
 
-#define ALT_MODULE_CLASS_Pix_Data altera_avalon_pio
-#define PIX_DATA_BASE 0x4001090
-#define PIX_DATA_BIT_CLEARING_EDGE_REGISTER 0
-#define PIX_DATA_BIT_MODIFYING_OUTPUT_REGISTER 0
-#define PIX_DATA_CAPTURE 0
-#define PIX_DATA_DATA_WIDTH 4
-#define PIX_DATA_DO_TEST_BENCH_WIRING 0
-#define PIX_DATA_DRIVEN_SIM_VALUE 0
-#define PIX_DATA_EDGE_TYPE "NONE"
-#define PIX_DATA_FREQ 50000000
-#define PIX_DATA_HAS_IN 0
-#define PIX_DATA_HAS_OUT 1
-#define PIX_DATA_HAS_TRI 0
-#define PIX_DATA_IRQ -1
-#define PIX_DATA_IRQ_INTERRUPT_CONTROLLER_ID -1
-#define PIX_DATA_IRQ_TYPE "NONE"
-#define PIX_DATA_NAME "/dev/Pix_Data"
-#define PIX_DATA_RESET_VALUE 0
-#define PIX_DATA_SPAN 16
-#define PIX_DATA_TYPE "altera_avalon_pio"
+#define ALT_MODULE_CLASS_Pix_Data_B altera_avalon_pio
+#define PIX_DATA_B_BASE 0x4001000
+#define PIX_DATA_B_BIT_CLEARING_EDGE_REGISTER 0
+#define PIX_DATA_B_BIT_MODIFYING_OUTPUT_REGISTER 0
+#define PIX_DATA_B_CAPTURE 0
+#define PIX_DATA_B_DATA_WIDTH 4
+#define PIX_DATA_B_DO_TEST_BENCH_WIRING 0
+#define PIX_DATA_B_DRIVEN_SIM_VALUE 0
+#define PIX_DATA_B_EDGE_TYPE "NONE"
+#define PIX_DATA_B_FREQ 50000000
+#define PIX_DATA_B_HAS_IN 0
+#define PIX_DATA_B_HAS_OUT 1
+#define PIX_DATA_B_HAS_TRI 0
+#define PIX_DATA_B_IRQ -1
+#define PIX_DATA_B_IRQ_INTERRUPT_CONTROLLER_ID -1
+#define PIX_DATA_B_IRQ_TYPE "NONE"
+#define PIX_DATA_B_NAME "/dev/Pix_Data_B"
+#define PIX_DATA_B_RESET_VALUE 0
+#define PIX_DATA_B_SPAN 16
+#define PIX_DATA_B_TYPE "altera_avalon_pio"
+
+
+/*
+ * Pix_Data_G configuration
+ *
+ */
+
+#define ALT_MODULE_CLASS_Pix_Data_G altera_avalon_pio
+#define PIX_DATA_G_BASE 0x4001010
+#define PIX_DATA_G_BIT_CLEARING_EDGE_REGISTER 0
+#define PIX_DATA_G_BIT_MODIFYING_OUTPUT_REGISTER 0
+#define PIX_DATA_G_CAPTURE 0
+#define PIX_DATA_G_DATA_WIDTH 4
+#define PIX_DATA_G_DO_TEST_BENCH_WIRING 0
+#define PIX_DATA_G_DRIVEN_SIM_VALUE 0
+#define PIX_DATA_G_EDGE_TYPE "NONE"
+#define PIX_DATA_G_FREQ 50000000
+#define PIX_DATA_G_HAS_IN 0
+#define PIX_DATA_G_HAS_OUT 1
+#define PIX_DATA_G_HAS_TRI 0
+#define PIX_DATA_G_IRQ -1
+#define PIX_DATA_G_IRQ_INTERRUPT_CONTROLLER_ID -1
+#define PIX_DATA_G_IRQ_TYPE "NONE"
+#define PIX_DATA_G_NAME "/dev/Pix_Data_G"
+#define PIX_DATA_G_RESET_VALUE 0
+#define PIX_DATA_G_SPAN 16
+#define PIX_DATA_G_TYPE "altera_avalon_pio"
+
+
+/*
+ * Pix_Data_R configuration
+ *
+ */
+
+#define ALT_MODULE_CLASS_Pix_Data_R altera_avalon_pio
+#define PIX_DATA_R_BASE 0x40010b0
+#define PIX_DATA_R_BIT_CLEARING_EDGE_REGISTER 0
+#define PIX_DATA_R_BIT_MODIFYING_OUTPUT_REGISTER 0
+#define PIX_DATA_R_CAPTURE 0
+#define PIX_DATA_R_DATA_WIDTH 4
+#define PIX_DATA_R_DO_TEST_BENCH_WIRING 0
+#define PIX_DATA_R_DRIVEN_SIM_VALUE 0
+#define PIX_DATA_R_EDGE_TYPE "NONE"
+#define PIX_DATA_R_FREQ 50000000
+#define PIX_DATA_R_HAS_IN 0
+#define PIX_DATA_R_HAS_OUT 1
+#define PIX_DATA_R_HAS_TRI 0
+#define PIX_DATA_R_IRQ -1
+#define PIX_DATA_R_IRQ_INTERRUPT_CONTROLLER_ID -1
+#define PIX_DATA_R_IRQ_TYPE "NONE"
+#define PIX_DATA_R_NAME "/dev/Pix_Data_R"
+#define PIX_DATA_R_RESET_VALUE 0
+#define PIX_DATA_R_SPAN 16
+#define PIX_DATA_R_TYPE "altera_avalon_pio"
 
 
 /*
@@ -290,7 +344,7 @@
  */
 
 #define ALT_MODULE_CLASS_SW altera_avalon_pio
-#define SW_BASE 0x4001050
+#define SW_BASE 0x4001070
 #define SW_BIT_CLEARING_EDGE_REGISTER 0
 #define SW_BIT_MODIFYING_OUTPUT_REGISTER 0
 #define SW_CAPTURE 1
@@ -327,19 +381,19 @@
 #define ALT_NUM_INTERNAL_INTERRUPT_CONTROLLERS 1
 #define ALT_NUM_INTERRUPT_CONTROLLERS 1
 #define ALT_STDERR "/dev/jtag_uart_0"
-#define ALT_STDERR_BASE 0x40010b8
+#define ALT_STDERR_BASE 0x40010d8
 #define ALT_STDERR_DEV jtag_uart_0
 #define ALT_STDERR_IS_JTAG_UART
 #define ALT_STDERR_PRESENT
 #define ALT_STDERR_TYPE "altera_avalon_jtag_uart"
 #define ALT_STDIN "/dev/jtag_uart_0"
-#define ALT_STDIN_BASE 0x40010b8
+#define ALT_STDIN_BASE 0x40010d8
 #define ALT_STDIN_DEV jtag_uart_0
 #define ALT_STDIN_IS_JTAG_UART
 #define ALT_STDIN_PRESENT
 #define ALT_STDIN_TYPE "altera_avalon_jtag_uart"
 #define ALT_STDOUT "/dev/jtag_uart_0"
-#define ALT_STDOUT_BASE 0x40010b8
+#define ALT_STDOUT_BASE 0x40010d8
 #define ALT_STDOUT_DEV jtag_uart_0
 #define ALT_STDOUT_IS_JTAG_UART
 #define ALT_STDOUT_PRESENT
@@ -352,7 +406,7 @@
  *
  */
 
-#define ALTPLL_0_BASE 0x40010a0
+#define ALTPLL_0_BASE 0x40010c0
 #define ALTPLL_0_IRQ -1
 #define ALTPLL_0_IRQ_INTERRUPT_CONTROLLER_ID -1
 #define ALTPLL_0_NAME "/dev/altpll_0"
@@ -378,7 +432,7 @@
  */
 
 #define ALT_MODULE_CLASS_irq_from_proc0 altera_avalon_pio
-#define IRQ_FROM_PROC0_BASE 0x4001010
+#define IRQ_FROM_PROC0_BASE 0x4001030
 #define IRQ_FROM_PROC0_BIT_CLEARING_EDGE_REGISTER 0
 #define IRQ_FROM_PROC0_BIT_MODIFYING_OUTPUT_REGISTER 0
 #define IRQ_FROM_PROC0_CAPTURE 0
@@ -405,7 +459,7 @@
  */
 
 #define ALT_MODULE_CLASS_irq_to_proc0 altera_avalon_pio
-#define IRQ_TO_PROC0_BASE 0x4001000
+#define IRQ_TO_PROC0_BASE 0x4001020
 #define IRQ_TO_PROC0_BIT_CLEARING_EDGE_REGISTER 0
 #define IRQ_TO_PROC0_BIT_MODIFYING_OUTPUT_REGISTER 0
 #define IRQ_TO_PROC0_CAPTURE 0
@@ -432,7 +486,7 @@
  */
 
 #define ALT_MODULE_CLASS_jtag_uart_0 altera_avalon_jtag_uart
-#define JTAG_UART_0_BASE 0x40010b8
+#define JTAG_UART_0_BASE 0x40010d8
 #define JTAG_UART_0_IRQ 0
 #define JTAG_UART_0_IRQ_INTERRUPT_CONTROLLER_ID 0
 #define JTAG_UART_0_NAME "/dev/jtag_uart_0"
@@ -450,7 +504,7 @@
  */
 
 #define ALT_MODULE_CLASS_mutex_0 altera_avalon_mutex
-#define MUTEX_0_BASE 0x40010b0
+#define MUTEX_0_BASE 0x40010d0
 #define MUTEX_0_IRQ -1
 #define MUTEX_0_IRQ_INTERRUPT_CONTROLLER_ID -1
 #define MUTEX_0_NAME "/dev/mutex_0"
@@ -507,7 +561,7 @@
  */
 
 #define ALT_MODULE_CLASS_pix_buff_addr altera_avalon_pio
-#define PIX_BUFF_ADDR_BASE 0x4001030
+#define PIX_BUFF_ADDR_BASE 0x4001050
 #define PIX_BUFF_ADDR_BIT_CLEARING_EDGE_REGISTER 0
 #define PIX_BUFF_ADDR_BIT_MODIFYING_OUTPUT_REGISTER 0
 #define PIX_BUFF_ADDR_CAPTURE 0
@@ -534,7 +588,7 @@
  */
 
 #define ALT_MODULE_CLASS_usec_counter_pio altera_avalon_pio
-#define USEC_COUNTER_PIO_BASE 0x4001020
+#define USEC_COUNTER_PIO_BASE 0x4001040
 #define USEC_COUNTER_PIO_BIT_CLEARING_EDGE_REGISTER 0
 #define USEC_COUNTER_PIO_BIT_MODIFYING_OUTPUT_REGISTER 0
 #define USEC_COUNTER_PIO_CAPTURE 0

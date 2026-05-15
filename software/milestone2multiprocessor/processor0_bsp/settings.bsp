@@ -2,8 +2,8 @@
 <sch:Settings xmlns:sch="http://www.altera.com/embeddedsw/bsp/schema">
         <BspType>hal</BspType>
         <BspVersion>default</BspVersion>
-        <BspGeneratedTimeStamp>15/05/2026 3:32:22 PM</BspGeneratedTimeStamp>
-        <BspGeneratedUnixTimeStamp>1778823143004</BspGeneratedUnixTimeStamp>
+        <BspGeneratedTimeStamp>15/05/2026 7:37:17 PM</BspGeneratedTimeStamp>
+        <BspGeneratedUnixTimeStamp>1778837837137</BspGeneratedUnixTimeStamp>
         <BspGeneratedLocation>C:\Users\hugod\OneDrive\Documents\GitHub\ECE3073-Project2026-GroupA06\software\milestone2multiprocessor\processor0_bsp</BspGeneratedLocation>
         <BspSettingsFile>settings.bsp</BspSettingsFile>
         <SopcDesignFile>..\..\..\nios_system.sopcinfo</SopcDesignFile>
@@ -905,80 +905,92 @@
                 <attributes>memory</attributes>
         </MemoryMap>
         <MemoryMap>
-                <slaveDescriptor>irq_to_proc0</slaveDescriptor>
+                <slaveDescriptor>Pix_Data_B</slaveDescriptor>
                 <addressRange>0x04001000 - 0x0400100F</addressRange>
                 <addressSpan>16</addressSpan>
                 <attributes/>
         </MemoryMap>
         <MemoryMap>
-                <slaveDescriptor>irq_from_proc0</slaveDescriptor>
+                <slaveDescriptor>Pix_Data_G</slaveDescriptor>
                 <addressRange>0x04001010 - 0x0400101F</addressRange>
                 <addressSpan>16</addressSpan>
                 <attributes/>
         </MemoryMap>
         <MemoryMap>
-                <slaveDescriptor>usec_counter_pio</slaveDescriptor>
+                <slaveDescriptor>irq_to_proc0</slaveDescriptor>
                 <addressRange>0x04001020 - 0x0400102F</addressRange>
                 <addressSpan>16</addressSpan>
                 <attributes/>
         </MemoryMap>
         <MemoryMap>
-                <slaveDescriptor>pix_buff_addr</slaveDescriptor>
+                <slaveDescriptor>irq_from_proc0</slaveDescriptor>
                 <addressRange>0x04001030 - 0x0400103F</addressRange>
                 <addressSpan>16</addressSpan>
                 <attributes/>
         </MemoryMap>
         <MemoryMap>
-                <slaveDescriptor>LEDR</slaveDescriptor>
+                <slaveDescriptor>usec_counter_pio</slaveDescriptor>
                 <addressRange>0x04001040 - 0x0400104F</addressRange>
                 <addressSpan>16</addressSpan>
                 <attributes/>
         </MemoryMap>
         <MemoryMap>
-                <slaveDescriptor>SW</slaveDescriptor>
+                <slaveDescriptor>pix_buff_addr</slaveDescriptor>
                 <addressRange>0x04001050 - 0x0400105F</addressRange>
                 <addressSpan>16</addressSpan>
                 <attributes/>
         </MemoryMap>
         <MemoryMap>
-                <slaveDescriptor>KEY</slaveDescriptor>
+                <slaveDescriptor>LEDR</slaveDescriptor>
                 <addressRange>0x04001060 - 0x0400106F</addressRange>
                 <addressSpan>16</addressSpan>
                 <attributes/>
         </MemoryMap>
         <MemoryMap>
-                <slaveDescriptor>HEX1</slaveDescriptor>
+                <slaveDescriptor>SW</slaveDescriptor>
                 <addressRange>0x04001070 - 0x0400107F</addressRange>
                 <addressSpan>16</addressSpan>
                 <attributes/>
         </MemoryMap>
         <MemoryMap>
-                <slaveDescriptor>HEX2</slaveDescriptor>
+                <slaveDescriptor>KEY</slaveDescriptor>
                 <addressRange>0x04001080 - 0x0400108F</addressRange>
                 <addressSpan>16</addressSpan>
                 <attributes/>
         </MemoryMap>
         <MemoryMap>
-                <slaveDescriptor>Pix_Data</slaveDescriptor>
+                <slaveDescriptor>HEX1</slaveDescriptor>
                 <addressRange>0x04001090 - 0x0400109F</addressRange>
                 <addressSpan>16</addressSpan>
                 <attributes/>
         </MemoryMap>
         <MemoryMap>
-                <slaveDescriptor>altpll_0</slaveDescriptor>
+                <slaveDescriptor>HEX2</slaveDescriptor>
                 <addressRange>0x040010A0 - 0x040010AF</addressRange>
                 <addressSpan>16</addressSpan>
                 <attributes/>
         </MemoryMap>
         <MemoryMap>
+                <slaveDescriptor>Pix_Data_R</slaveDescriptor>
+                <addressRange>0x040010B0 - 0x040010BF</addressRange>
+                <addressSpan>16</addressSpan>
+                <attributes/>
+        </MemoryMap>
+        <MemoryMap>
+                <slaveDescriptor>altpll_0</slaveDescriptor>
+                <addressRange>0x040010C0 - 0x040010CF</addressRange>
+                <addressSpan>16</addressSpan>
+                <attributes/>
+        </MemoryMap>
+        <MemoryMap>
                 <slaveDescriptor>mutex_0</slaveDescriptor>
-                <addressRange>0x040010B0 - 0x040010B7</addressRange>
+                <addressRange>0x040010D0 - 0x040010D7</addressRange>
                 <addressSpan>8</addressSpan>
                 <attributes/>
         </MemoryMap>
         <MemoryMap>
                 <slaveDescriptor>jtag_uart_0</slaveDescriptor>
-                <addressRange>0x040010B8 - 0x040010BF</addressRange>
+                <addressRange>0x040010D8 - 0x040010DF</addressRange>
                 <addressSpan>8</addressSpan>
                 <attributes>printable</attributes>
         </MemoryMap>

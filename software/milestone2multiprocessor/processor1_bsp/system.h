@@ -4,7 +4,7 @@
  * Machine generated for CPU 'nios2_gen2_1' in SOPC Builder design 'nios_system'
  * SOPC Builder design path: ../../../nios_system.sopcinfo
  *
- * Generated: Thu May 14 14:01:39 EST 2026
+ * Generated: Fri May 15 19:14:27 EST 2026
  */
 
 /*
@@ -142,7 +142,7 @@
  */
 
 #define ALT_MODULE_CLASS_Cam_Ready altera_avalon_pio
-#define CAM_READY_BASE 0x4001070
+#define CAM_READY_BASE 0x4001050
 #define CAM_READY_BIT_CLEARING_EDGE_REGISTER 0
 #define CAM_READY_BIT_MODIFYING_OUTPUT_REGISTER 0
 #define CAM_READY_CAPTURE 0
@@ -183,7 +183,7 @@
  */
 
 #define ALT_MODULE_CLASS_KEY altera_avalon_pio
-#define KEY_BASE 0x4001060
+#define KEY_BASE 0x4001080
 #define KEY_BIT_CLEARING_EDGE_REGISTER 0
 #define KEY_BIT_MODIFYING_OUTPUT_REGISTER 0
 #define KEY_CAPTURE 1
@@ -210,7 +210,7 @@
  */
 
 #define ALT_MODULE_CLASS_SW altera_avalon_pio
-#define SW_BASE 0x4001050
+#define SW_BASE 0x4001070
 #define SW_BIT_CLEARING_EDGE_REGISTER 0
 #define SW_BIT_MODIFYING_OUTPUT_REGISTER 0
 #define SW_CAPTURE 1
@@ -247,19 +247,19 @@
 #define ALT_NUM_INTERNAL_INTERRUPT_CONTROLLERS 1
 #define ALT_NUM_INTERRUPT_CONTROLLERS 1
 #define ALT_STDERR "/dev/jtag_uart_1"
-#define ALT_STDERR_BASE 0x4001080
+#define ALT_STDERR_BASE 0x4001060
 #define ALT_STDERR_DEV jtag_uart_1
 #define ALT_STDERR_IS_JTAG_UART
 #define ALT_STDERR_PRESENT
 #define ALT_STDERR_TYPE "altera_avalon_jtag_uart"
 #define ALT_STDIN "/dev/jtag_uart_1"
-#define ALT_STDIN_BASE 0x4001080
+#define ALT_STDIN_BASE 0x4001060
 #define ALT_STDIN_DEV jtag_uart_1
 #define ALT_STDIN_IS_JTAG_UART
 #define ALT_STDIN_PRESENT
 #define ALT_STDIN_TYPE "altera_avalon_jtag_uart"
 #define ALT_STDOUT "/dev/jtag_uart_1"
-#define ALT_STDOUT_BASE 0x4001080
+#define ALT_STDOUT_BASE 0x4001060
 #define ALT_STDOUT_DEV jtag_uart_1
 #define ALT_STDOUT_IS_JTAG_UART
 #define ALT_STDOUT_PRESENT
@@ -272,7 +272,7 @@
  *
  */
 
-#define ALTPLL_0_BASE 0x40010a0
+#define ALTPLL_0_BASE 0x40010c0
 #define ALTPLL_0_IRQ -1
 #define ALTPLL_0_IRQ_INTERRUPT_CONTROLLER_ID -1
 #define ALTPLL_0_NAME "/dev/altpll_0"
@@ -298,7 +298,7 @@
  */
 
 #define ALT_MODULE_CLASS_irq_from_proc1 altera_avalon_pio
-#define IRQ_FROM_PROC1_BASE 0x4001040
+#define IRQ_FROM_PROC1_BASE 0x4001030
 #define IRQ_FROM_PROC1_BIT_CLEARING_EDGE_REGISTER 0
 #define IRQ_FROM_PROC1_BIT_MODIFYING_OUTPUT_REGISTER 0
 #define IRQ_FROM_PROC1_CAPTURE 0
@@ -325,7 +325,7 @@
  */
 
 #define ALT_MODULE_CLASS_irq_to_proc1 altera_avalon_pio
-#define IRQ_TO_PROC1_BASE 0x4001030
+#define IRQ_TO_PROC1_BASE 0x4001020
 #define IRQ_TO_PROC1_BIT_CLEARING_EDGE_REGISTER 0
 #define IRQ_TO_PROC1_BIT_MODIFYING_OUTPUT_REGISTER 0
 #define IRQ_TO_PROC1_CAPTURE 0
@@ -352,7 +352,7 @@
  */
 
 #define ALT_MODULE_CLASS_jtag_uart_1 altera_avalon_jtag_uart
-#define JTAG_UART_1_BASE 0x4001080
+#define JTAG_UART_1_BASE 0x4001060
 #define JTAG_UART_1_IRQ 4
 #define JTAG_UART_1_IRQ_INTERRUPT_CONTROLLER_ID 0
 #define JTAG_UART_1_NAME "/dev/jtag_uart_1"
@@ -370,7 +370,7 @@
  */
 
 #define ALT_MODULE_CLASS_mutex_0 altera_avalon_mutex
-#define MUTEX_0_BASE 0x40010b0
+#define MUTEX_0_BASE 0x40010d0
 #define MUTEX_0_IRQ -1
 #define MUTEX_0_IRQ_INTERRUPT_CONTROLLER_ID -1
 #define MUTEX_0_NAME "/dev/mutex_0"
@@ -458,7 +458,7 @@
  */
 
 #define ALT_MODULE_CLASS_usec_counter_pio altera_avalon_pio
-#define USEC_COUNTER_PIO_BASE 0x4001020
+#define USEC_COUNTER_PIO_BASE 0x4001040
 #define USEC_COUNTER_PIO_BIT_CLEARING_EDGE_REGISTER 0
 #define USEC_COUNTER_PIO_BIT_MODIFYING_OUTPUT_REGISTER 0
 #define USEC_COUNTER_PIO_CAPTURE 0

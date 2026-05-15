@@ -2,8 +2,8 @@
 <sch:Settings xmlns:sch="http://www.altera.com/embeddedsw/bsp/schema">
         <BspType>hal</BspType>
         <BspVersion>default</BspVersion>
-        <BspGeneratedTimeStamp>15/05/2026 3:32:42 PM</BspGeneratedTimeStamp>
-        <BspGeneratedUnixTimeStamp>1778823162399</BspGeneratedUnixTimeStamp>
+        <BspGeneratedTimeStamp>15/05/2026 7:37:24 PM</BspGeneratedTimeStamp>
+        <BspGeneratedUnixTimeStamp>1778837844065</BspGeneratedUnixTimeStamp>
         <BspGeneratedLocation>C:\Users\hugod\OneDrive\Documents\GitHub\ECE3073-Project2026-GroupA06\software\milestone2multiprocessor\processor1_bsp</BspGeneratedLocation>
         <BspSettingsFile>settings.bsp</BspSettingsFile>
         <SopcDesignFile>..\..\..\nios_system.sopcinfo</SopcDesignFile>
@@ -935,56 +935,56 @@
                 <attributes/>
         </MemoryMap>
         <MemoryMap>
-                <slaveDescriptor>usec_counter_pio</slaveDescriptor>
+                <slaveDescriptor>irq_to_proc1</slaveDescriptor>
                 <addressRange>0x04001020 - 0x0400102F</addressRange>
                 <addressSpan>16</addressSpan>
                 <attributes/>
         </MemoryMap>
         <MemoryMap>
-                <slaveDescriptor>irq_to_proc1</slaveDescriptor>
+                <slaveDescriptor>irq_from_proc1</slaveDescriptor>
                 <addressRange>0x04001030 - 0x0400103F</addressRange>
                 <addressSpan>16</addressSpan>
                 <attributes/>
         </MemoryMap>
         <MemoryMap>
-                <slaveDescriptor>irq_from_proc1</slaveDescriptor>
+                <slaveDescriptor>usec_counter_pio</slaveDescriptor>
                 <addressRange>0x04001040 - 0x0400104F</addressRange>
                 <addressSpan>16</addressSpan>
                 <attributes/>
         </MemoryMap>
         <MemoryMap>
-                <slaveDescriptor>SW</slaveDescriptor>
+                <slaveDescriptor>Cam_Ready</slaveDescriptor>
                 <addressRange>0x04001050 - 0x0400105F</addressRange>
                 <addressSpan>16</addressSpan>
                 <attributes/>
         </MemoryMap>
         <MemoryMap>
-                <slaveDescriptor>KEY</slaveDescriptor>
-                <addressRange>0x04001060 - 0x0400106F</addressRange>
-                <addressSpan>16</addressSpan>
-                <attributes/>
+                <slaveDescriptor>jtag_uart_1</slaveDescriptor>
+                <addressRange>0x04001060 - 0x04001067</addressRange>
+                <addressSpan>8</addressSpan>
+                <attributes>printable</attributes>
         </MemoryMap>
         <MemoryMap>
-                <slaveDescriptor>Cam_Ready</slaveDescriptor>
+                <slaveDescriptor>SW</slaveDescriptor>
                 <addressRange>0x04001070 - 0x0400107F</addressRange>
                 <addressSpan>16</addressSpan>
                 <attributes/>
         </MemoryMap>
         <MemoryMap>
-                <slaveDescriptor>jtag_uart_1</slaveDescriptor>
-                <addressRange>0x04001080 - 0x04001087</addressRange>
-                <addressSpan>8</addressSpan>
-                <attributes>printable</attributes>
+                <slaveDescriptor>KEY</slaveDescriptor>
+                <addressRange>0x04001080 - 0x0400108F</addressRange>
+                <addressSpan>16</addressSpan>
+                <attributes/>
         </MemoryMap>
         <MemoryMap>
                 <slaveDescriptor>altpll_0</slaveDescriptor>
-                <addressRange>0x040010A0 - 0x040010AF</addressRange>
+                <addressRange>0x040010C0 - 0x040010CF</addressRange>
                 <addressSpan>16</addressSpan>
                 <attributes/>
         </MemoryMap>
         <MemoryMap>
                 <slaveDescriptor>mutex_0</slaveDescriptor>
-                <addressRange>0x040010B0 - 0x040010B7</addressRange>
+                <addressRange>0x040010D0 - 0x040010D7</addressRange>
                 <addressSpan>8</addressSpan>
                 <attributes/>
         </MemoryMap>

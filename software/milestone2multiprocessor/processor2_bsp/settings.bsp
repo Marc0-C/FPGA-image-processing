@@ -2,8 +2,8 @@
 <sch:Settings xmlns:sch="http://www.altera.com/embeddedsw/bsp/schema">
         <BspType>hal</BspType>
         <BspVersion>default</BspVersion>
-        <BspGeneratedTimeStamp>15/05/2026 3:32:57 PM</BspGeneratedTimeStamp>
-        <BspGeneratedUnixTimeStamp>1778823177140</BspGeneratedUnixTimeStamp>
+        <BspGeneratedTimeStamp>15/05/2026 7:37:29 PM</BspGeneratedTimeStamp>
+        <BspGeneratedUnixTimeStamp>1778837849689</BspGeneratedUnixTimeStamp>
         <BspGeneratedLocation>C:\Users\hugod\OneDrive\Documents\GitHub\ECE3073-Project2026-GroupA06\software\milestone2multiprocessor\processor2_bsp</BspGeneratedLocation>
         <BspSettingsFile>settings.bsp</BspSettingsFile>
         <SopcDesignFile>..\..\..\nios_system.sopcinfo</SopcDesignFile>
@@ -929,20 +929,32 @@
                 <attributes>memory</attributes>
         </MemoryMap>
         <MemoryMap>
+                <slaveDescriptor>Pix_Data_B</slaveDescriptor>
+                <addressRange>0x04001000 - 0x0400100F</addressRange>
+                <addressSpan>16</addressSpan>
+                <attributes/>
+        </MemoryMap>
+        <MemoryMap>
+                <slaveDescriptor>Pix_Data_G</slaveDescriptor>
+                <addressRange>0x04001010 - 0x0400101F</addressRange>
+                <addressSpan>16</addressSpan>
+                <attributes/>
+        </MemoryMap>
+        <MemoryMap>
                 <slaveDescriptor>jtag_uart_2</slaveDescriptor>
-                <addressRange>0x04001000 - 0x04001007</addressRange>
+                <addressRange>0x04001020 - 0x04001027</addressRange>
                 <addressSpan>8</addressSpan>
                 <attributes>printable</attributes>
         </MemoryMap>
         <MemoryMap>
                 <slaveDescriptor>pix_buff_addr</slaveDescriptor>
-                <addressRange>0x04001030 - 0x0400103F</addressRange>
+                <addressRange>0x04001050 - 0x0400105F</addressRange>
                 <addressSpan>16</addressSpan>
                 <attributes/>
         </MemoryMap>
         <MemoryMap>
-                <slaveDescriptor>Pix_Data</slaveDescriptor>
-                <addressRange>0x04001090 - 0x0400109F</addressRange>
+                <slaveDescriptor>Pix_Data_R</slaveDescriptor>
+                <addressRange>0x040010B0 - 0x040010BF</addressRange>
                 <addressSpan>16</addressSpan>
                 <attributes/>
         </MemoryMap>

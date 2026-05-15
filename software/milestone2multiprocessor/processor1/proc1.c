@@ -14,8 +14,8 @@
 // -1 KEY, -2 ROTATE, -3 SWITCH, -4,-5,-6: CONTROL key, rot and switch
 #define THRESHOLD 75 // for accelerometer rotation to rotate frames in quad mode
 
-#define IM_SIZE (240 * 320)
-#define IM_SIZEsmll (120 * 160)
+#define IM_SIZE ((240 * 320)*3/2)
+#define IM_SIZEsmll ((120 * 160)*3/2)
 
 // Gyro write Registers
 #define BW_RATE 0x2c
@@ -118,6 +118,8 @@ int main() {
     IOWR_ALTERA_AVALON_PIO_DATA(SHARED_MAILBOX_BASE-4, 0); //initialise controls to 0
     IOWR_ALTERA_AVALON_PIO_DATA(SHARED_MAILBOX_BASE-5, 0);
     IOWR_ALTERA_AVALON_PIO_DATA(SHARED_MAILBOX_BASE-6, 0);
+    IOWR_ALTERA_AVALON_PIO_DATA(SHARED_MAILBOX_BASE-10, 0);
+
 
     // gyro
     alt_u8 gyro_data_out;
@@ -126,7 +128,7 @@ int main() {
     alt_16 yData;
 
 
-    alt_u8 cam_set = 16; // camera settings var
+    alt_u8 cam_set = 21; // camera settings var
 
 
     static uint8_t dummy_buffer[IM_SIZE]; // for writing junk info into when changing cam settings
@@ -137,8 +139,8 @@ int main() {
     static uint8_t image_buffer[IM_SIZE];
     int framenum = 0;
 
-    cam_set = 16; // default settings except "settings changed" = true
-    alt_avalon_spi_command(SPI_0_BASE, 1, 0, &cam_set, IM_SIZE, image_buffer, 0);
+    cam_set = 21; // default settings except "settings changed" = true
+    alt_avalon_spi_command(SPI_0_BASE, 1, 1, &cam_set, IM_SIZE, image_buffer, 0);
 
     // clear edge capture register
     IOWR_ALTERA_AVALON_PIO_EDGE_CAP(KEY_BASE, 0);
@@ -171,20 +173,20 @@ int main() {
 			if (quadmode == 1){
 				lastQuadMode = 1;
 
-				cam_set = 18; // default settings except downscaled & "settings changed" = true
+				cam_set = 23; // default settings except downscaled & "settings changed" = true
 
 				while (IORD_ALTERA_AVALON_PIO_DATA(CAM_READY_BASE) == 0) {
-					printf("Not ready yet\n");
+					printf("Not ready to change settings yet\n");
 				}
 
 				alt_avalon_spi_command(SPI_0_BASE, 1, 1, &cam_set, IM_SIZEsmll, dummy_buffer, 0);
 			}
 			else {
 				lastQuadMode = 0;
-				cam_set = 16; // default settings except "settings changed" = true
+				cam_set = 21; // default settings except "settings changed" = true
 
 				while (IORD_ALTERA_AVALON_PIO_DATA(CAM_READY_BASE) == 0) {
-					printf("Not ready yet\n");
+					printf("Not ready to change settings yet\n");
 				}
 
 				alt_avalon_spi_command(SPI_0_BASE, 1, 1, &cam_set, IM_SIZE, dummy_buffer, 0);
@@ -214,10 +216,17 @@ int main() {
         	    printf("sent rotation interrupt \n");
         	    IOWR_ALTERA_AVALON_PIO_DATA(IRQ_FROM_PROC1_BASE, 0);
     		}
-    	    //cam_set = 0x0; // default settings except downscaled & "settings changed" = true
+
+
+    		while (IORD_ALTERA_AVALON_PIO_DATA(CAM_READY_BASE) == 0) {
+
+			}
     	    alt_avalon_spi_command(SPI_0_BASE, 1, 0, NULL, IM_SIZEsmll, image_buffer, 0);
     	}else{
-    		//cam_set = 0x0;
+
+    		while (IORD_ALTERA_AVALON_PIO_DATA(CAM_READY_BASE) == 0) {
+
+			}
     		alt_avalon_spi_command(SPI_0_BASE, 1, 0, NULL, IM_SIZE, image_buffer, 0);
     	}
     	if(switchmoved == 1){
@@ -242,6 +251,11 @@ int main() {
             IOWR_8DIRECT(SHARED_MAILBOX_BASE, i, image_buffer[i]);
             // each image_buffer[i] is a byte, each 320 bytes is a row
         }
+
+        altera_avalon_mutex_lock(mutex, 1);
+		IOWR_8DIRECT(SHARED_MAILBOX_BASE, - 10 , 1);
+		altera_avalon_mutex_unlock(mutex);
+
         framenum += 1;
         //altera_avalon_mutex_unlock(mutex);
         //printf("just unlocked mutex \n");
