@@ -142,6 +142,8 @@ void edge_detector(alt_u8 image_data[], alt_u8 image_return[], int size){
 	im_height >>= size;
 
 
+	float pixL, pixR;
+
 	int g_xL;
 	int g_xR;
 	int g_yL;
@@ -162,7 +164,10 @@ void edge_detector(alt_u8 image_data[], alt_u8 image_return[], int size){
 	alt_u8 *mid;
 	alt_u8 *bot;
 
-	alt_u8 ret;
+	alt_u8 topL, midL, botL;
+	alt_u8 topR, midR, botR;
+
+	alt_u8 *ret = image_return;
 
 	for (int i = 0; i < im_height; i++){
 		for (int j = 0; j < im_width; j++){
@@ -172,29 +177,37 @@ void edge_detector(alt_u8 image_data[], alt_u8 image_return[], int size){
 			g_yR = 0;
 
 			if (j == 0){
-				mid = &image_data[i*im_width];
+				mid = &image_data[3*i*im_width];
 				if (i == 0){
 					top = mid;
-					bot = &image_data[(i+1)*im_width];
+					bot = &image_data[3*((i+1)*im_width)];
 				} else if (i == im_height - 1) {
-					top = &image_data[(i-1)*im_width];
+					top = &image_data[3*(i-1)*im_width];
 					bot = mid;
 				} else {
-					top = &image_data[(i-1)*im_width];
-					bot = &image_data[(i+1)*im_width];
+					top = &image_data[3*(i-1)*im_width];
+					bot = &image_data[3*(i+1)*im_width];
 				}
 
-				vertSumL = (*top >> 4) + 2*(*mid >> 4) + (*bot >> 4);
-				vertSumR = (*top & 0x0F) + 2*(*mid & 0x0F) + (*bot & 0x0F);
+				topL = (77*(top[0] & 0x0F)+150*(top[0] >> 4)+29*(top[1] & 0x0F) >> 8);
+				topR = (77*(top[1] >> 4)+150*(top[2] & 0x0F)+29*(top[2] >> 4)>> 8);
+				midL = (77*(mid[0] & 0x0F)+150*(mid[0] >> 4)+29*(mid[1] & 0x0F)>> 8);
+				midR = (77*(mid[1] >> 4)+150*(mid[2] & 0x0F)+29*(mid[2] >> 4)>> 8);
+				botL = (77*(bot[0] & 0x0F)+150*(bot[0] >> 4)+29*(bot[1] & 0x0F)>> 8);
+				botR = (77*(bot[1] >> 4)+150*(bot[2] & 0x0F)+29*(bot[2] >> 4)>> 8);
+
+
+				vertSumL = topL + 2*midL + botL;
+				vertSumR = topR + 2*midR + botR;
 				vertSums[1] = vertSumL;
 				vertSums[2] = vertSumL;
 				vertSums[3] = vertSumR;
-				topPix[2] = (*top >> 4);
-				topPix[3] = (*top & 0x0F);
+				topPix[2] = topL;
+				topPix[3] = topR;
 				topPix[1] = topPix[2];
 
-				botPix[2] = (*bot >> 4);
-				botPix[3] = (*bot & 0x0F);
+				botPix[2] = botL;
+				botPix[3] = botR;
 				botPix[1] = botPix[2];
 			}
 
@@ -208,17 +221,25 @@ void edge_detector(alt_u8 image_data[], alt_u8 image_return[], int size){
 			botPix[1] = botPix[3];
 
 			if (j != im_width-1) {
-				top++;
-				mid++;
-				bot++;
-				vertSumL = (*top >> 4) + 2*(*mid >> 4) + (*bot >> 4);
-				vertSumR = (*top & 0x0F) + 2*(*mid & 0x0F) + (*bot & 0x0F);
+				top += 3;
+				mid += 3;
+				bot += 3;
+
+				topL = (77*(top[0] & 0x0F)+150*(top[0] >> 4)+29*(top[1] & 0x0F) >> 8);
+				topR = (77*(top[1] >> 4)+150*(top[2] & 0x0F)+29*(top[2] >> 4)>> 8);
+				midL = (77*(mid[0] & 0x0F)+150*(mid[0] >> 4)+29*(mid[1] & 0x0F)>> 8);
+				midR = (77*(mid[1] >> 4)+150*(mid[2] & 0x0F)+29*(mid[2] >> 4)>> 8);
+				botL = (77*(bot[0] & 0x0F)+150*(bot[0] >> 4)+29*(bot[1] & 0x0F)>> 8);
+				botR = (77*(bot[1] >> 4)+150*(bot[2] & 0x0F)+29*(bot[2] >> 4)>> 8);
+
+				vertSumL = topL + 2*midL + botL;
+				vertSumR = topR + 2*midR + botR;
 				vertSums[2] = vertSumL;
 				vertSums[3] = vertSumR;
-				topPix[2] = (*top >> 4);
-				topPix[3] = (*top & 0x0F);
-				botPix[2] = (*bot >> 4);
-				botPix[3] = (*bot & 0x0F);
+				topPix[2] = topL;
+				topPix[3] = topR;
+				botPix[2] = botL;
+				botPix[3] = botR;
 
 			} else {
 				vertSums[2] = vertSums[3];
@@ -231,11 +252,21 @@ void edge_detector(alt_u8 image_data[], alt_u8 image_return[], int size){
 
 			gL = abs(g_xL) + abs(g_yL);
 			gR = abs(g_xR) + abs(g_yR);
-			ret = 0;
 
-			if (gL > thresh) ret += 0xF0;
-			if (gR > thresh) ret += 0x0F;
-			image_return[i*im_width+j] = ret;
+
+			ret[0] = 0;
+			ret[1] = 0;
+			ret[2] = 0;
+
+			if (gL > thresh) {
+				ret[0] += 0xFF;
+				ret[1] += 0x0F;
+			}
+			if (gR > thresh) {
+				ret[1] += 0xF0;
+				ret[2] += 0xFF;
+			}
+			ret += 3;
 
 		}
 	}
