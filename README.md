@@ -64,5 +64,5 @@ Flynn Kennedy 34977856 fken0004@student.monash.edu iHateGithubDesktop
 ---
 # Tasks and Functionalities
 
-DE-10 camera functioning over SPI and through FPGA based Nios-II processors, displayed on VGA Display with no artifacts. FPS benchmark displayed on onboard HEX and accelerometer data printed to console.
+ESP-CAM connected to DE-10 Lite over SPI and through FPGA based Nios-II processors, camera feed displayed on VGA Display with no artifacts. FPS benchmark displayed on onboard HEX and accelerometer data printed to console.
 Uses multiple Nios II proccessors running in parallel. Capable of displaying either a single 320x240 image, or four downscaled 160x120 images in a 2x2 grid. Various image proccessing/filters can be applied to displayed images.
