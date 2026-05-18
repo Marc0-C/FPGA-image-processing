@@ -16,9 +16,7 @@ module vga_controller (
 	input VGA_CLK,
 	
 	// Controller interface with the pixel buffer
-	input [3:0] VGA_DATA_R,
-	input [3:0] VGA_DATA_G,
-	input [3:0] VGA_DATA_B,
+	input [3:0] VGA_DATA,
 	output [18:0] VGA_ADDR, // This address may vary, having it longer that what you use wont be an issue
 	
 	// Pixel data output
@@ -69,9 +67,9 @@ module vga_controller (
 
 	assign pixelValid = (H_ADDR > (H_SYNC + H_BACK) && H_ADDR < (H_CYCLE - H_FRONT)) && (V_ADDR > (V_SYNC + V_BACK) && V_ADDR < (V_CYCLE - V_FRONT));
 	
-	assign VGA_R = pixelValid ? VGA_DATA_R[3:0] : 4'd0;
-	assign VGA_G = pixelValid ? VGA_DATA_G[3:0] : 4'd0;
-	assign VGA_B = pixelValid ? VGA_DATA_B[3:0] : 4'd0;
+	assign VGA_R = pixelValid ? VGA_DATA[3:0] : 4'd0;
+	assign VGA_G = pixelValid ? VGA_DATA[3:0] : 4'd0;
+	assign VGA_B = pixelValid ? VGA_DATA[3:0] : 4'd0;
 	
 	wire [18:0] H_MEM_ADDR, V_MEM_ADDR;	
 	
@@ -83,3 +81,4 @@ module vga_controller (
 					
 	
 endmodule
+
